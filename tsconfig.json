@@ -1,16 +1,17 @@
 {
     "compilerOptions": {
+        "target": "es5",
+        "outDir": "lib",
+        "module": "commonjs",
         "baseUrl": ".",
         "paths": {
             "*": ["types/*"]
         },
-        "module": "commonjs",
-        "target": "es2015",
         "noImplicitAny": true,
+        "declaration": true,
         "skipLibCheck": true,
         "removeComments": true,
         "preserveConstEnums": true,
-        "outDir": "lib",
         "sourceMap": true,
         "strictBindCallApply": false,
         "strict": true,

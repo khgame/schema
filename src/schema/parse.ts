@@ -36,15 +36,18 @@ export function parseDecorators(markStr: string) {
     };
 }
 
-export function parseMark(markStr: string) {
+export function parseMark(markStr: string): Schema {
     const {decorators, strLeft} = parseDecorators(markStr);
     const typeObjects = parseTypeSegment(strLeft);
     return new Schema(decorators, typeObjects);
 }
 
-export function parseTypeSegment(typeSegment: string) {
+export function parseTypeSegment(typeSegment: string): SchemaNode[] {
     const optional = false;
-    if (typeSegment.endsWith("?")) {
+    if (!typeSegment) {
+        return [];
+    }
+    if (typeSegment[typeSegment.length - 1] === "?") {
         typeSegment = typeSegment.substring(0, typeSegment.length - 1);
     }
     const typeGroupStr = typeSegment.trim();
@@ -52,14 +55,14 @@ export function parseTypeSegment(typeSegment: string) {
         throw new Error("typeGroup not exist");
     }
     const typeObjs: SchemaNode[] = typeGroupStr.split("|")
-        .map(getTypeObject);
+        .map(getSchemaNode);
     if (optional) {
         typeObjs.push(new SchemaNode(SupportedTypes.Undefined));
     }
     return typeObjs;
 }
 
-export function parseTemplate(typeStr: string) {
+export function parseTemplate(typeStr: string): { typeNameAlias: string, templateTypes: SchemaNode[] } {
     typeStr = typeStr.trim();
     const leftAngle = typeStr.indexOf("<");
     const rightAngle = typeStr[typeStr.length - 1] === ">" ? typeStr.length - 1 : -1;
@@ -77,7 +80,7 @@ export function parseTemplate(typeStr: string) {
     };
 }
 
-export function getTypeObject(typeStr: string) {
+export function getSchemaNode(typeStr: string): SchemaNode {
     const template = parseTemplate(typeStr.toLowerCase());
     return new SchemaNode(
         getTypeNameByAlias(template.typeNameAlias),
