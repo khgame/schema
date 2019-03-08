@@ -4,7 +4,7 @@ import "mocha";
 import {SupportedTypes} from "../../src/constant";
 import {getPlainConvertor} from "../../src/convertor";
 
-describe("Plain Convertor Test", () => {
+describe("Plain Convertor Validate Test", () => {
     describe(SupportedTypes.Any, () => {
         const convertor = getPlainConvertor(SupportedTypes.Any);
         it("receive number", () => {
