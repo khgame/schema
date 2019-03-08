@@ -70,5 +70,5 @@ export const boolConvertor = new PlainConvertor(
 
 export const anyConvertor = new PlainConvertor(
     SupportedTypes.Any,
-    (v) => [true, v],
+    (cellValue) => [true, cellValue],
 );
