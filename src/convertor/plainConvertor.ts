@@ -64,7 +64,7 @@ export const boolConvertor = new PlainConvertor(
             _.isBoolean(ret) || _.isNumber(ret) || _.isString(ret),
             ret === true ||
             (_.isNumber(ret) && ret > 0) ||
-            (_.isString(ret) && TrueType.indexOf(ret) > 0),
+            (_.isString(ret) && TrueType.indexOf(ret) >= 0),
         ];
     });
 
