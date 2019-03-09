@@ -95,4 +95,14 @@ describe("Plain Convertor Convert Test", () => {
         });
     });
 
+    describe(SupportedTypes.Undefined, () => {
+        const convertor = getPlainConvertor(SupportedTypes.Undefined);
+        it("receive undefined", () => {
+            expect(convertor.convert(undefined)).to.equal(undefined);
+        });
+        it("receive float", () => {
+            expect(() => convertor.convert(1.123123)).to.throw(Error);
+        });
+    });
+
 });

@@ -96,6 +96,16 @@ describe("Plain Convertor Validate Test", () => {
         });
     });
 
+    describe(SupportedTypes.Undefined, () => {
+        const convertor = getPlainConvertor(SupportedTypes.Undefined);
+        it("receive int", () => {
+            expect(convertor.validate(1)).to.deep.equal([false, undefined]);
+        });
+        it("receive undefined", () => {
+            expect(convertor.validate(undefined)).to.deep.equal([true, undefined]);
+        });
+    });
+
     describe("default situation", () => {
 
         it(SupportedTypes.None, () => {

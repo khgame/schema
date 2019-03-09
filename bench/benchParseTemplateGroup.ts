@@ -1,3 +1,5 @@
 import {parseMark} from "../src";
 
-parseMark("Array<uint|string>");
+const mark = parseMark("$oneof $const Array<uint|string>");
+
+console.log(mark.toSchemaStr())

@@ -83,7 +83,7 @@ export function parseTypeSegment(typeSegment: string): SchemaNode[] {
         throw new Error("typeGroup not exist");
     }
     const typeObjs: SchemaNode[] = splitorPoses.map(
-        (splitorPos) => getSchemaNode(typeGroupStr.substr(...splitorPos)),
+        (splitorPos) => parseSchemaNode(typeGroupStr.substr(...splitorPos)),
     );
     if (optional) {
         typeObjs.push(new SchemaNode(SupportedTypes.Undefined));
@@ -91,7 +91,8 @@ export function parseTypeSegment(typeSegment: string): SchemaNode[] {
     return typeObjs;
 }
 
-export function parseTemplate(typeStr: string): { typeNameAlias: string, templateTypes: SchemaNode[] } {
+export function parseTemplate(typeStr: string)
+    : { typeNameAlias: string, templateTypes: SchemaNode[] } {
     typeStr = typeStr.trim();
     const leftAngle = typeStr.indexOf("<");
     const rightAngle = typeStr[typeStr.length - 1] === ">" ? typeStr.length - 1 : -1;
@@ -109,7 +110,7 @@ export function parseTemplate(typeStr: string): { typeNameAlias: string, templat
     };
 }
 
-export function getSchemaNode(typeStr: string): SchemaNode {
+export function parseSchemaNode(typeStr: string): SchemaNode {
     const template = parseTemplate(typeStr.toLowerCase());
     return new SchemaNode(
         getTypeNameByAlias(template.typeNameAlias),

@@ -3,7 +3,10 @@ export class Schema {
     }
 
     public toSchemaStr() {
-        return `${this.typeObjects.reduce((prev, tObj) => prev + "|" + tObj.toSchemaStr(), "").substr(1)}`;
+        return `${
+            this.decorators.reduce((prev, cur) => prev + " " + cur, "")} ${
+            this.typeObjects.reduce((prev, tObj) => prev + "|" + tObj.toSchemaStr(), "").substr(1)
+        }`;
     }
 }
 
