@@ -5,7 +5,7 @@ import {Convertor} from "./base";
 import {getPlainConvertor} from "./plainConvertor";
 
 function isTemplateNode(tNode: TNode) {
-    return tNode.tName === SupportedTypes.Pair || tNode.tName === SupportedTypes.Pair;
+    return tNode.tName === SupportedTypes.Pair || tNode.tName === SupportedTypes.Array;
 }
 
 export class TemplateConvertor extends Convertor {
@@ -62,10 +62,13 @@ export class TNodeConvertor extends Convertor {
         this.useConvertor = isTemplateNode(this.tNode) ?
             new TemplateConvertor(this.tNode) :
             getPlainConvertor(this.tNode.tName);
+        if(!this.useConvertor) {
+            throw new Error(`cannot find suitable convertor of tNode ${JSON.stringify(this.tNode)}`)
+        }
     }
 
     public validate(v: any) {
-        return this.useConvertor.convert(v);
+        return this.useConvertor.validate(v);
     }
 }
 
