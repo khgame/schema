@@ -21,7 +21,11 @@ export class SchemaNode {
         if (!this.typeName) {
             throw new Error("the type dose not exit");
         }
-        const templateArgStr: string = this.templateTypeObjects.reduce((prev, tObj) => prev + "|" + tObj.toSchemaStr(), "").substr(1);
+        const templateArgStr: string = this.templateTypeObjects
+            .reduce(
+                (prev, tObj) => prev + (tObj.typeName === SupportedTypes.Undefined ? "?" : ("|" + tObj.toSchemaStr()))
+                , "",
+            ).substr(1);
         return templateArgStr ? `${this.typeName}<${templateArgStr}>` : `${this.typeName}`;
     }
 }
