@@ -1,3 +1,5 @@
+import {SupportedTypes} from "../constant";
+
 export class Schema {
     constructor(public readonly decorators: string[], public readonly typeObjects: SchemaNode[]) {
     }
@@ -5,8 +7,9 @@ export class Schema {
     public toSchemaStr() {
         return `${
             this.decorators.reduce((prev, cur) => prev + " " + cur, "")} ${
-            this.typeObjects.reduce((prev, tObj) => prev + "|" + tObj.toSchemaStr(), "").substr(1)
-        }`;
+            this.typeObjects.reduce((prev, tObj) =>
+                prev + (tObj.typeName === SupportedTypes.Undefined ? "?" : ("|" + tObj.toSchemaStr())), "").substr(1)
+            }`;
     }
 }
 

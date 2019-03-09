@@ -83,7 +83,7 @@ export function parseTypeSegment(typeSegment: string): SchemaNode[] {
         throw new Error("typeGroup not exist");
     }
     const typeObjs: SchemaNode[] = splitorPoses.map(
-        (splitorPos) => parseSchemaNode(typeGroupStr.substr(...splitorPos)),
+        (splitorPos) => parseSchemaNode(typeGroupStr.substr(splitorPos[0], splitorPos[1] - splitorPos[0])),
     );
     if (optional) {
         typeObjs.push(new SchemaNode(SupportedTypes.Undefined));
