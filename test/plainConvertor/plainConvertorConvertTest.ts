@@ -2,8 +2,8 @@ import {expect} from "chai";
 import "mocha";
 
 import {Error} from "tslint/lib/error";
-import {SupportedTypes} from "../../src/constant";
-import {getPlainConvertor} from "../../src/convertor";
+import {SupportedTypes} from "../../src";
+import {getPlainConvertor} from "../../src";
 
 describe("Plain Convertor Convert Test", () => {
     describe(SupportedTypes.Any, () => {
