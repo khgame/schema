@@ -65,7 +65,7 @@ export function parseTypeSegment(typeSegment: string): SchemaNode[] {
             case "|":
                 if (depth === 0) {
                     splitorPoses.push([
-                        splitorPoses.length > 0 ? splitorPoses[splitorPoses.length - 1][1] : 0,
+                        splitorPoses.length > 0 ? splitorPoses[splitorPoses.length - 1][1] + 1 : 0,
                         i,
                     ]);
                 }
@@ -73,7 +73,7 @@ export function parseTypeSegment(typeSegment: string): SchemaNode[] {
         }
     }
     splitorPoses.push([
-            splitorPoses.length > 0 ? splitorPoses[splitorPoses.length - 1][1] : 0,
+            splitorPoses.length > 0 ? splitorPoses[splitorPoses.length - 1][1] + 1 : 0,
             typeGroupStr.length,
         ],
     );
