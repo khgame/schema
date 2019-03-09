@@ -12,4 +12,5 @@ export enum MarkType {
 
 export interface IMark {
     markType: MarkType;
+    toSchemaStr(): string;
 }
