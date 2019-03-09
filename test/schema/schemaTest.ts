@@ -1,6 +1,7 @@
 import {expect} from "chai";
 import "mocha";
 
+import {Error} from "tslint/lib/error";
 import {AliasTable, SupportedTypes} from "../../src";
 import {parseMark} from "../../src";
 
@@ -109,5 +110,43 @@ describe("parse simple schema", () => {
             expect(mark.typeObjects[0].templateTypeObjects[1].typeName).to.equal(SupportedTypes.String);
         });
 
+    });
+
+    describe("Optional", () => {
+        it("optional without typeSegment", () => {
+            expect(() => parseMark("?")).to.throw(Error);
+        });
+
+        describe("optional single type", () => {
+            testedKey.forEach((key) => {
+                AliasTable[key].forEach((alias) => {
+                    it(`${alias}?`, () => {
+                        const mark = parseMark(`${alias}?`);
+                        expect(mark.typeObjects.length).to.equal(2);
+                        expect(mark.typeObjects[0].typeName).to.equal(key);
+                        expect(mark.typeObjects[1].typeName).to.equal(SupportedTypes.Undefined);
+                    });
+                });
+            });
+        });
+
+        it("str|onoff|uint8?", () => {
+            const mark = parseMark("str|onoff|uint8?");
+            expect(mark.typeObjects.length).to.equal(4);
+            expect(mark.typeObjects[0].typeName).to.equal(SupportedTypes.String);
+            expect(mark.typeObjects[1].typeName).to.equal(SupportedTypes.Boolean);
+            expect(mark.typeObjects[2].typeName).to.equal(SupportedTypes.UInt);
+            expect(mark.typeObjects[3].typeName).to.equal(SupportedTypes.Undefined);
+        });
+
+
+        // it(`${SupportedTypes.Array}<${SupportedTypes.Array}>`, () => {
+        //     const mark = parseMark(`${SupportedTypes.Pair}<uint|string>`);
+        //     expect(mark.typeObjects.length).to.equal(1);
+        //     expect(mark.typeObjects[0].typeName).to.equal(SupportedTypes.Pair);
+        //     expect(mark.typeObjects[0].templateTypeObjects.length).to.equal(2);
+        //     expect(mark.typeObjects[0].templateTypeObjects[0].typeName).to.equal(SupportedTypes.UInt);
+        //     expect(mark.typeObjects[0].templateTypeObjects[1].typeName).to.equal(SupportedTypes.String);
+        // });
     });
 });

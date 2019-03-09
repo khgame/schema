@@ -2,7 +2,7 @@ import {expect} from "chai";
 import "mocha";
 
 import {Error} from "tslint/lib/error";
-import {SupportedTypes} from "../../src";
+import {AliasTable, SupportedTypes} from "../../src";
 import {getPlainConvertor} from "../../src";
 
 describe("Plain Convertor Convert Test", () => {
@@ -17,6 +17,13 @@ describe("Plain Convertor Convert Test", () => {
         it("receive undefined", () => {
             expect(convertor.convert(undefined)).to.equal(undefined);
         });
+        describe("alias of " + SupportedTypes.Any, () => {
+            AliasTable[SupportedTypes.Any].forEach((alias) => {
+                it(alias, () => {
+                    expect(convertor.convert(3)).to.equal(3);
+                });
+            });
+        });
     });
 
     describe(SupportedTypes.String, () => {
@@ -30,6 +37,13 @@ describe("Plain Convertor Convert Test", () => {
         });
         it("receive undefined", () => {
             expect(() => convertor.convert(undefined)).to.throw(Error);
+        });
+        describe("alias of " + SupportedTypes.String, () => {
+            AliasTable[SupportedTypes.String].forEach((alias) => {
+                it(alias, () => {
+                    expect(convertor.convert("aaa")).to.equal("aaa");
+                });
+            });
         });
     });
 
@@ -49,6 +63,13 @@ describe("Plain Convertor Convert Test", () => {
         });
         it("receive undefined", () => {
             expect(() => convertor.convert(undefined)).to.throw(Error);
+        });
+        describe("alias of " + SupportedTypes.Boolean, () => {
+            AliasTable[SupportedTypes.Boolean].forEach((alias) => {
+                it(alias, () => {
+                    expect(convertor.convert("t")).to.equal(true);
+                });
+            });
         });
     });
 
@@ -70,6 +91,13 @@ describe("Plain Convertor Convert Test", () => {
         it("receive undefined", () => {
             expect(() => convertor.convert(undefined)).to.throw(Error);
         });
+        describe("alias of " + SupportedTypes.Float, () => {
+            AliasTable[SupportedTypes.Float].forEach((alias) => {
+                it(alias, () => {
+                    expect(convertor.convert(-3.333)).to.equal(-3.333);
+                });
+            });
+        });
     });
 
     describe(SupportedTypes.UFloat, () => {
@@ -82,16 +110,53 @@ describe("Plain Convertor Convert Test", () => {
             expect(convertor.convert("1.2")).to.equal(1.2);
             expect(() => convertor.convert("-1.2")).to.throw(Error);
         });
+        describe("alias of " + SupportedTypes.UFloat, () => {
+            AliasTable[SupportedTypes.UFloat].forEach((alias) => {
+                it(alias, () => {
+                    expect(convertor.convert(3.333)).to.equal(3.333);
+                });
+            });
+        });
     });
 
     describe(SupportedTypes.Int, () => {
         const convertor = getPlainConvertor(SupportedTypes.Int);
-        it("receive int", () => {
+        it("receive number", () => {
             expect(convertor.convert(1)).to.equal(1);
+            expect(() => convertor.convert(1.123123)).to.throw(Error);
             expect(convertor.convert(-1)).to.equal(-1);
         });
-        it("receive float", () => {
+        it("receive number string", () => {
+            expect(convertor.convert("1")).to.equal(1);
+            expect(() => convertor.convert("1.233")).to.throw(Error);
+        });
+        describe("alias of " + SupportedTypes.Int, () => {
+            AliasTable[SupportedTypes.Int].forEach((alias) => {
+                it(alias, () => {
+                    expect(convertor.convert(88)).to.equal(88);
+                });
+            });
+        });
+    });
+
+    describe(SupportedTypes.UInt, () => {
+        const convertor = getPlainConvertor(SupportedTypes.UInt);
+        it("receive number", () => {
+            expect(convertor.convert(2)).to.equal(2);
             expect(() => convertor.convert(1.123123)).to.throw(Error);
+            expect(() => convertor.convert(-1)).to.throw(Error);
+        });
+        it("receive number string", () => {
+            expect(convertor.convert("1")).to.equal(1);
+            expect(() => convertor.convert("-1")).to.throw(Error);
+            expect(() => convertor.convert("2.1")).to.throw(Error);
+        });
+        describe("alias of " + SupportedTypes.UInt, () => {
+            AliasTable[SupportedTypes.UInt].forEach((alias) => {
+                it(alias, () => {
+                    expect(convertor.convert(2)).to.equal(2);
+                });
+            });
         });
     });
 
@@ -102,6 +167,13 @@ describe("Plain Convertor Convert Test", () => {
         });
         it("receive float", () => {
             expect(() => convertor.convert(1.123123)).to.throw(Error);
+        });
+        describe("alias of " + SupportedTypes.Undefined, () => {
+            AliasTable[SupportedTypes.Undefined].forEach((alias) => {
+                it(alias, () => {
+                    expect(convertor.convert(undefined)).to.equal(undefined);
+                });
+            });
         });
     });
 
