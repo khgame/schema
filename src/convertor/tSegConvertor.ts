@@ -1,29 +1,26 @@
 import * as _ from "lodash";
 import {SupportedTypes} from "../constant";
-import {TDM, TNode, TSeg} from "../schema";
+import {TNode, TSeg} from "../schema";
 import {Convertor} from "./base";
 import {getPlainConvertor} from "./plainConvertor";
 
+function isTemplateNode(tNode: TNode) {
+    return tNode.tName === SupportedTypes.Pair || tNode.tName === SupportedTypes.Pair;
+}
+
 export class TemplateConvertor extends Convertor {
 
-    public innerConvertor?: Convertor = undefined;
+    public useConvertor: Convertor;
 
     constructor(public readonly tNode: TNode) {
         super();
         if (tNode.innerCount <= 0) {
-            throw new Error("type missed");
+            this.useConvertor = getPlainConvertor(SupportedTypes.Any); // if template filled with empty, fallback to any
         } else if (tNode.innerCount === 1) {
-            this.innerConvertor = new TNodeConvertor(tNode.inner(0));
+            this.useConvertor = new TNodeConvertor(tNode.inner(0));
         } else {
-            this.innerConvertor = new TSegConvertor(tNode.tSeg);
+            this.useConvertor = new TSegConvertor(tNode.tSeg);
         }
-    }
-
-    get useConvertor() {
-        if (this.innerConvertor) {
-            return this.innerConvertor;
-        }
-        return getPlainConvertor(SupportedTypes.Any); // if template filled with empty, fallback to any
     }
 
     public validate(v: any): [boolean, any] {
@@ -62,9 +59,9 @@ export class TNodeConvertor extends Convertor {
 
     constructor(public readonly tNode: TNode) {
         super();
-        this.useConvertor = this.tNode.innerCount <= 0 ?
-            getPlainConvertor(this.tNode.tName) :
-            new TemplateConvertor(this.tNode);
+        this.useConvertor = isTemplateNode(this.tNode) ?
+            new TemplateConvertor(this.tNode) :
+            getPlainConvertor(this.tNode.tName);
     }
 
     public validate(v: any) {
