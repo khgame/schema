@@ -1,13 +1,13 @@
-import {parseMark, SupportedTypes} from "../src";
+import {TDM} from "../src/schema/typeDescriptionMark";
 
-const mark1 = parseMark("$oneof $const Array<uint|string>");
+const mark1 = TDM.parse("$oneof $const Array<uint|string>");
 
 console.log(mark1.toSchemaStr());
 
-const mark2 = parseMark("str|onoff|uint8?");
+const mark2 = TDM.parse("str|onoff|uint8?");
 
 console.log(mark2.toSchemaStr());
 
-const mark3 = parseMark("$oneof array<array<pair<uint|str?>>|pair<float>?>");
+const mark3 = TDM.parse("$oneof array<array<pair<uint|str?>>|pair<float>?>");
 
 console.log(mark3.toSchemaStr());

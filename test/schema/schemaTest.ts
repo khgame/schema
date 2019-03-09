@@ -3,20 +3,20 @@ import "mocha";
 
 import {Error} from "tslint/lib/error";
 import {AliasTable, SupportedTypes} from "../../src";
-import {parseMark} from "../../src";
+import {TDM} from "../../src/schema/typeDescriptionMark";
 
 describe("parse simple schema", () => {
 
-    it("simple unavailable mark", () => {
-        const mark = parseMark("aaa");
-        expect(mark.nodes.length).to.equal(1);
-        expect(mark.nodes[0].typeName).to.equal(SupportedTypes.None);
-        expect(mark.nodes[0].nodes).to.deep.equal([]);
+    it("simple unavailable tdmObject", () => {
+        const tdmObject = TDM.parse("aaa");
+        expect(tdmObject.innerCount).to.equal(1);
+        expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.None);
+        expect(tdmObject.inner(0).innerCount).to.equal(0);
     });
 
-    it("empty mark", () => {
-        const mark = parseMark("");
-        expect(mark.nodes.length).to.equal(0);
+    it("empty tdmObject", () => {
+        const tdmObject = TDM.parse("");
+        expect(tdmObject.innerCount).to.equal(0);
     });
 
     const testedKey = [
@@ -33,8 +33,8 @@ describe("parse simple schema", () => {
         describe(key, () => {
             AliasTable[key].forEach((v) => {
                 it(key + ": " + v, () => {
-                    const mark = parseMark("");
-                    expect(mark.nodes.length).to.equal(0);
+                    const tdmObject = TDM.parse("");
+                    expect(tdmObject.innerCount).to.equal(0);
                 });
             });
         });
@@ -44,34 +44,34 @@ describe("parse simple schema", () => {
         testedKey.forEach((key) => {
             AliasTable[key].forEach((alias) => {
                 describe(`${SupportedTypes.Array}<${alias}>`, () => {
-                    const mark = parseMark(`${SupportedTypes.Array}<${alias}>`);
+                    const tdmObject = TDM.parse(`${SupportedTypes.Array}<${alias}>`);
                     it("parse array", () => {
-                        expect(mark.nodes.length).to.equal(1);
-                        expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Array);
+                        expect(tdmObject.innerCount).to.equal(1);
+                        expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.Array);
                     });
 
                     it("parse template", () => {
-                        expect(mark.nodes[0].nodes.length).to.equal(1);
-                        expect(mark.nodes[0].nodes[0].typeName).to.equal(key);
+                        expect(tdmObject.inner(0).innerCount).to.equal(1);
+                        expect(tdmObject.inner(0).inner(0).tName).to.equal(key);
                     });
                 });
             });
         });
 
         it(`${SupportedTypes.Array} without template`, () => {
-            const mark = parseMark(SupportedTypes.Array);
-            expect(mark.nodes.length).to.equal(1);
-            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Array);
-            expect(mark.nodes[0].nodes.length).to.equal(0);
+            const tdmObject = TDM.parse(SupportedTypes.Array);
+            expect(tdmObject.innerCount).to.equal(1);
+            expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.Array);
+            expect(tdmObject.inner(0).innerCount).to.equal(0);
         });
 
         it(`${SupportedTypes.Array}<uint|string>`, () => {
-            const mark = parseMark(`${SupportedTypes.Array}<uint|string>`);
-            expect(mark.nodes.length).to.equal(1);
-            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Array);
-            expect(mark.nodes[0].nodes.length).to.equal(2);
-            expect(mark.nodes[0].nodes[0].typeName).to.equal(SupportedTypes.UInt);
-            expect(mark.nodes[0].nodes[1].typeName).to.equal(SupportedTypes.String);
+            const tdmObject = TDM.parse(`${SupportedTypes.Array}<uint|string>`);
+            expect(tdmObject.innerCount).to.equal(1);
+            expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.Array);
+            expect(tdmObject.inner(0).innerCount).to.equal(2);
+            expect(tdmObject.inner(0).inner(0).tName).to.equal(SupportedTypes.UInt);
+            expect(tdmObject.inner(0).inner(1).tName).to.equal(SupportedTypes.String);
         });
 
     });
@@ -80,63 +80,63 @@ describe("parse simple schema", () => {
         testedKey.forEach((key) => {
             AliasTable[key].forEach((alias) => {
                 describe(`${SupportedTypes.Pair}<${alias}>`, () => {
-                    const mark = parseMark(`${SupportedTypes.Pair}<${alias}>`);
+                    const tdmObject = TDM.parse(`${SupportedTypes.Pair}<${alias}>`);
                     it("parse pair", () => {
-                        expect(mark.nodes.length).to.equal(1);
-                        expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Pair);
+                        expect(tdmObject.innerCount).to.equal(1);
+                        expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.Pair);
                     });
 
                     it("parse template", () => {
-                        expect(mark.nodes[0].nodes.length).to.equal(1);
-                        expect(mark.nodes[0].nodes[0].typeName).to.equal(key);
+                        expect(tdmObject.inner(0).innerCount).to.equal(1);
+                        expect(tdmObject.inner(0).inner(0).tName).to.equal(key);
                     });
                 });
             });
         });
 
         it(`${SupportedTypes.Pair} without template`, () => {
-            const mark = parseMark(SupportedTypes.Pair);
-            expect(mark.nodes.length).to.equal(1);
-            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Pair);
-            expect(mark.nodes[0].nodes.length).to.equal(0);
+            const tdmObject = TDM.parse(SupportedTypes.Pair);
+            expect(tdmObject.innerCount).to.equal(1);
+            expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.Pair);
+            expect(tdmObject.inner(0).innerCount).to.equal(0);
         });
 
         it(`${SupportedTypes.Pair}<uint|string>`, () => {
-            const mark = parseMark(`${SupportedTypes.Pair}<uint|string>`);
-            expect(mark.nodes.length).to.equal(1);
-            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Pair);
-            expect(mark.nodes[0].nodes.length).to.equal(2);
-            expect(mark.nodes[0].nodes[0].typeName).to.equal(SupportedTypes.UInt);
-            expect(mark.nodes[0].nodes[1].typeName).to.equal(SupportedTypes.String);
+            const tdmObject = TDM.parse(`${SupportedTypes.Pair}<uint|string>`);
+            expect(tdmObject.innerCount).to.equal(1);
+            expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.Pair);
+            expect(tdmObject.inner(0).innerCount).to.equal(2);
+            expect(tdmObject.inner(0).inner(0).tName).to.equal(SupportedTypes.UInt);
+            expect(tdmObject.inner(0).inner(1).tName).to.equal(SupportedTypes.String);
         });
 
     });
 
     describe("Optional", () => {
         it("optional without typeSegment", () => {
-            expect(() => parseMark("?")).to.throw(Error);
+            expect(() => TDM.parse("?")).to.throw(Error);
         });
 
         describe("optional single type", () => {
             testedKey.forEach((key) => {
                 AliasTable[key].forEach((alias) => {
                     it(`${alias}?`, () => {
-                        const mark = parseMark(`${alias}?`);
-                        expect(mark.nodes.length).to.equal(2);
-                        expect(mark.nodes[0].typeName).to.equal(key);
-                        expect(mark.nodes[1].typeName).to.equal(SupportedTypes.Undefined);
+                        const tdmObject = TDM.parse(`${alias}?`);
+                        expect(tdmObject.innerCount).to.equal(2);
+                        expect(tdmObject.inner(0).tName).to.equal(key);
+                        expect(tdmObject.inner(1).tName).to.equal(SupportedTypes.Undefined);
                     });
                 });
             });
         });
 
         it("str|onoff|uint8?", () => {
-            const mark = parseMark("str|onoff|uint8?");
-            expect(mark.nodes.length).to.equal(4);
-            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.String);
-            expect(mark.nodes[1].typeName).to.equal(SupportedTypes.Boolean);
-            expect(mark.nodes[2].typeName).to.equal(SupportedTypes.UInt);
-            expect(mark.nodes[3].typeName).to.equal(SupportedTypes.Undefined);
+            const tdmObject = TDM.parse("str|onoff|uint8?");
+            expect(tdmObject.innerCount).to.equal(4);
+            expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.String);
+            expect(tdmObject.inner(1).tName).to.equal(SupportedTypes.Boolean);
+            expect(tdmObject.inner(2).tName).to.equal(SupportedTypes.UInt);
+            expect(tdmObject.inner(3).tName).to.equal(SupportedTypes.Undefined);
         });
 
     });
@@ -144,38 +144,19 @@ describe("parse simple schema", () => {
     describe("Compound", () => {
         const input = `${SupportedTypes.Array}<${SupportedTypes.Array}<${SupportedTypes.Pair}<uint|str?>>|${SupportedTypes.Pair}<float>?>`;
         it(input, () => {
-            const mark = parseMark(input);
-            expect(mark.nodes.length).to.equal(1);
-            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Array);
-            expect(mark.nodes[0].nodes.length).to.equal(3);
-            expect(mark.nodes[0].nodes[0].typeName).to.equal(SupportedTypes.Array);
-            expect(mark.nodes[0].nodes[1].typeName).to.equal(SupportedTypes.Pair);
-            expect(mark.nodes[0].nodes[2].typeName).to.equal(SupportedTypes.Undefined);
-            expect(mark.nodes[0].nodes[0].nodes.length).to.equal(1);
-            expect(mark.nodes[0].nodes[0].nodes[0].typeName).to.equal(SupportedTypes.Pair);
-            expect(mark.nodes[0].nodes[0].nodes[0].nodes.length).to.equal(3);
-            expect(mark.nodes[0].nodes[0].nodes[0].nodes[0].typeName).to.equal(SupportedTypes.UInt);
-            expect(mark.nodes[0].nodes[0].nodes[0].nodes[1].typeName).to.equal(SupportedTypes.String);
-            expect(mark.nodes[0].nodes[0].nodes[0].nodes[2].typeName).to.equal(SupportedTypes.Undefined);
-        });
-    });
-
-    describe("schema operation", () => {
-        const input = `${SupportedTypes.Array}<${SupportedTypes.Array}<${SupportedTypes.Pair}<uint|str?>>|${SupportedTypes.Pair}<float>?>`;
-        it(input, () => {
-            const mark = parseMark(input);
-            expect(mark.nodes.length).to.equal(1);
-            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Array);
-            expect(mark.nodes[0].innerCount).to.equal(3);
-            expect(mark.nodes[0].inner(0).typeName).to.equal(SupportedTypes.Array);
-            expect(mark.nodes[0].inner(1).typeName).to.equal(SupportedTypes.Pair);
-            expect(mark.nodes[0].inner(2).typeName).to.equal(SupportedTypes.Undefined);
-            expect(mark.nodes[0].inner(0).innerCount).to.equal(1);
-            expect(mark.nodes[0].inner(0).inner(0).typeName).to.equal(SupportedTypes.Pair);
-            expect(mark.nodes[0].inner(0).inner(0).innerCount).to.equal(3);
-            expect(mark.nodes[0].inner(0).inner(0).inner(0).typeName).to.equal(SupportedTypes.UInt);
-            expect(mark.nodes[0].inner(0).inner(0).inner(1).typeName).to.equal(SupportedTypes.String);
-            expect(mark.nodes[0].inner(0).inner(0).inner(2).typeName).to.equal(SupportedTypes.Undefined);
+            const tdmObject = TDM.parse(input);
+            expect(tdmObject.innerCount).to.equal(1);
+            expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.Array);
+            expect(tdmObject.inner(0).innerCount).to.equal(3);
+            expect(tdmObject.inner(0).inner(0).tName).to.equal(SupportedTypes.Array);
+            expect(tdmObject.inner(0).inner(1).tName).to.equal(SupportedTypes.Pair);
+            expect(tdmObject.inner(0).inner(2).tName).to.equal(SupportedTypes.Undefined);
+            expect(tdmObject.inner(0).inner(0).innerCount).to.equal(1);
+            expect(tdmObject.inner(0).inner(0).inner(0).tName).to.equal(SupportedTypes.Pair);
+            expect(tdmObject.inner(0).inner(0).inner(0).innerCount).to.equal(3);
+            expect(tdmObject.inner(0).inner(0).inner(0).inner(0).tName).to.equal(SupportedTypes.UInt);
+            expect(tdmObject.inner(0).inner(0).inner(0).inner(1).tName).to.equal(SupportedTypes.String);
+            expect(tdmObject.inner(0).inner(0).inner(0).inner(2).tName).to.equal(SupportedTypes.Undefined);
         });
     });
 });

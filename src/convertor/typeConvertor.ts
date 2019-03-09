@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import {SupportedTypes} from "../constant";
-import {SchemaNode} from "../schema";
+import {TNode, TSeg} from "../schema";
 import {Convertor} from "./base";
 import {getPlainConvertor} from "./plainConvertor";
 
@@ -8,10 +8,10 @@ export class TemplateConvertor extends Convertor {
 
     public innerConvertor?: Convertor = undefined;
 
-    constructor(public readonly schemaNode: SchemaNode) {
+    constructor(public readonly tNode: TNode) {
         super();
-        if (schemaNode.innerCount > 0) {
-            this.innerConvertor = getConvertor(schemaNode.nodes);
+        if (tNode.innerCount > 0) {
+            this.innerConvertor = getConvertor(tNode.tSeg);
         }
     }
 
@@ -23,7 +23,7 @@ export class TemplateConvertor extends Convertor {
     }
 
     public validate(v: any): [boolean, any] {
-        if (this.schemaNode.typeName === SupportedTypes.Array) {
+        if (this.tNode.tName === SupportedTypes.Array) {
             const items = !v ? [] : ((!_.isString(v) || v.indexOf("|") < 0) ? [v] : v.split("|").map((s) => s.trim()));
             const result = items.map((item) => this.useConvertor.validate(item)).reduce((prev, item) => {
                 prev[0] = prev[0] && item[0];
@@ -31,7 +31,7 @@ export class TemplateConvertor extends Convertor {
                 return prev;
             }, [true, []]);
             return result;
-        } else if (this.schemaNode.typeName === SupportedTypes.Pair) {
+        } else if (this.tNode.tName === SupportedTypes.Pair) {
             if (!_.isString(v)) {
                 throw TypeError(`must be string value ${v} of pair that match the schema 'key:val'`);
             }
@@ -56,11 +56,11 @@ export class TypeConvertor extends Convertor {
 
     public useConvertor: Convertor;
 
-    constructor(public readonly schemaNode: SchemaNode) {
+    constructor(public readonly tNode: TNode) {
         super();
-        this.useConvertor = this.schemaNode.innerCount <= 0 ?
-            getPlainConvertor(this.schemaNode.typeName) :
-            new TemplateConvertor(schemaNode);
+        this.useConvertor = this.tNode.innerCount <= 0 ?
+            getPlainConvertor(this.tNode.tName) :
+            new TemplateConvertor(this.tNode);
     }
 
     public validate(v: any) {
@@ -72,9 +72,9 @@ export class GroupConvertor extends Convertor {
 
     public convertors: Convertor[];
 
-    constructor(public readonly schemaNodes: SchemaNode[]) {
+    constructor(public readonly tSeg: TSeg) {
         super();
-        this.convertors = schemaNodes.map((tObj) => new TypeConvertor(tObj));
+        this.convertors = tSeg.nodes.map((tObj) => new TypeConvertor(tObj));
     }
 
     public validate(v: any): [boolean, any] {
@@ -88,12 +88,12 @@ export class GroupConvertor extends Convertor {
     }
 }
 
-export function getConvertor(schemaNodes: SchemaNode[]) {
-    if (schemaNodes.length <= 0) {
+export function getConvertor(tSeg: TSeg) {
+    if (tSeg.length <= 0) {
         throw new Error("type missed");
-    } else if (schemaNodes.length === 1) {
-        return new TypeConvertor(schemaNodes[0]);
+    } else if (tSeg.length === 1) {
+        return new TypeConvertor(tSeg.get(0));
     } else {
-        return new GroupConvertor(schemaNodes);
+        return new GroupConvertor(tSeg);
     }
 }
