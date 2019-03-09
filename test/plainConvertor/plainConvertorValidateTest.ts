@@ -114,12 +114,12 @@ describe("Plain Convertor Validate Test", () => {
         });
 
         it(SupportedTypes.Array, () => {
-            const convertor = getPlainConvertor(SupportedTypes.None);
+            const convertor = getPlainConvertor(SupportedTypes.Array);
             expect(convertor).to.equal(undefined);
         });
 
         it(SupportedTypes.Pair, () => {
-            const convertor = getPlainConvertor(SupportedTypes.None);
+            const convertor = getPlainConvertor(SupportedTypes.Pair);
             expect(convertor).to.equal(undefined);
         });
     });

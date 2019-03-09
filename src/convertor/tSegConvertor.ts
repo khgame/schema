@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import {SupportedTypes} from "../constant";
-import {TNode, TSeg} from "../schema";
+import {TDM, TNode, TSeg} from "../schema";
 import {Convertor} from "./base";
 import {getPlainConvertor} from "./plainConvertor";
 
@@ -10,8 +10,12 @@ export class TemplateConvertor extends Convertor {
 
     constructor(public readonly tNode: TNode) {
         super();
-        if (tNode.innerCount > 0) {
-            this.innerConvertor = getConvertor(tNode.tSeg);
+        if (tNode.innerCount <= 0) {
+            throw new Error("type missed");
+        } else if (tNode.innerCount === 1) {
+            this.innerConvertor = new TNodeConvertor(tNode.inner(0));
+        } else {
+            this.innerConvertor = new TSegConvertor(tNode.tSeg);
         }
     }
 
@@ -52,7 +56,7 @@ export class TemplateConvertor extends Convertor {
     }
 }
 
-export class TypeConvertor extends Convertor {
+export class TNodeConvertor extends Convertor {
 
     public useConvertor: Convertor;
 
@@ -68,13 +72,13 @@ export class TypeConvertor extends Convertor {
     }
 }
 
-export class GroupConvertor extends Convertor {
+export class TSegConvertor extends Convertor {
 
     public convertors: Convertor[];
 
     constructor(public readonly tSeg: TSeg) {
         super();
-        this.convertors = tSeg.nodes.map((tObj) => new TypeConvertor(tObj));
+        this.convertors = tSeg.nodes.map((tNode) => new TNodeConvertor(tNode));
     }
 
     public validate(v: any): [boolean, any] {
@@ -85,15 +89,5 @@ export class GroupConvertor extends Convertor {
             }
         }
         return [false, undefined];
-    }
-}
-
-export function getConvertor(tSeg: TSeg) {
-    if (tSeg.length <= 0) {
-        throw new Error("type missed");
-    } else if (tSeg.length === 1) {
-        return new TypeConvertor(tSeg.get(0));
-    } else {
-        return new GroupConvertor(tSeg);
     }
 }
