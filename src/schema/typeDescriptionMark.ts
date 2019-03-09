@@ -157,7 +157,7 @@ export class TDM extends TSegHolder {
 
     public toSchemaStr() {
         return `${
-            this.mds.reduce((prev, cur) => prev + " " + cur, "")} ${
-            this.tSeg.toSchemaStr()}`;
+            this.mds.reduce((prev, cur) => prev + " " + cur, "").substr(1)} ${
+            this.tSeg.toSchemaStr()}`.trim();
     }
 }

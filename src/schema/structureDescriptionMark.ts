@@ -55,7 +55,9 @@ export class SDM implements IMark {
 
     public toSchemaStr() {
         return `${
-            this.mds.reduce((prev, cur) => prev + " " + cur, "")} ${
-            this.marks.reduce((prev, cur) => prev + " , " + cur.toSchemaStr(), "")}`;
+            this.mds.reduce((prev, cur) => prev + " " + cur, "").substr(1)} ${
+            this.sdmType === SDMType.Obj ? "{" : "["} ${
+            this.marks.reduce((prev, cur) => prev + ", " + cur.toSchemaStr(), "").substr(1).trim()} ${
+            this.sdmType === SDMType.Obj ? "}" : "]"}`.trim();
     }
 }
