@@ -6,17 +6,26 @@ import {getPlainConvertor} from "./plainConvertor";
 
 export class TemplateConvertor extends Convertor {
 
-    public innerConvertor: Convertor;
+    public innerConvertor?: Convertor = undefined;
 
     constructor(public readonly schemaNode: SchemaNode) {
         super();
-        this.innerConvertor = getConvertor(schemaNode.templateTypeObjects);
+        if (schemaNode.templateTypeObjects.length > 0) {
+            this.innerConvertor = getConvertor(schemaNode.templateTypeObjects);
+        }
+    }
+
+    get useConvertor() {
+        if (this.innerConvertor) {
+            return this.innerConvertor;
+        }
+        return getPlainConvertor(SupportedTypes.Any); // if template filled with empty, fallback to any
     }
 
     public validate(v: any): [boolean, any] {
         if (this.schemaNode.typeName === SupportedTypes.Array) {
             const items = !v ? [] : ((!_.isString(v) || v.indexOf("|") < 0) ? [v] : v.split("|").map((s) => s.trim()));
-            const result = items.map((item) => this.innerConvertor.validate(item)).reduce((prev, item) => {
+            const result = items.map((item) => this.useConvertor.validate(item)).reduce((prev, item) => {
                 prev[0] = prev[0] && item[0];
                 prev[1].push(item[1]);
                 return prev;
@@ -34,7 +43,7 @@ export class TemplateConvertor extends Convertor {
                 key: split[0],
                 val: split[1],
             };
-            const pre = this.innerConvertor.validate(kv.val);
+            const pre = this.useConvertor.validate(kv.val);
             kv.val = pre[1];
             return [pre[0], kv];
 
