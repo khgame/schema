@@ -43,13 +43,14 @@ export function parseMark(markStr: string): Schema {
 }
 
 export function parseTypeSegment(typeSegment: string): SchemaNode[] {
-    const optional = false;
+    let optional = false;
     if (!typeSegment) {
         return [];
     }
 
     if (typeSegment[typeSegment.length - 1] === "?") {
         typeSegment = typeSegment.substring(0, typeSegment.length - 1);
+        optional = true;
     }
     const typeGroupStr = typeSegment.trim();
 
