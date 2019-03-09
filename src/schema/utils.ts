@@ -4,3 +4,12 @@ export function parseMD(markStr: string) {
         strLeft: markStr.replace(/\$[a-zA-Z0-9_]+/g, "").trim(),
     };
 }
+
+export enum MarkType {
+    SDM,
+    TDM,
+}
+
+export interface IMark {
+    markType: MarkType;
+}

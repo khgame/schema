@@ -1,5 +1,5 @@
 import {AliasTable, SupportedTypes} from "../constant";
-import {parseMD} from "./utils";
+import {MarkType, parseMD} from "./utils";
 
 function reverseAlias() {
     const ret: { [typeStr: string]: string } = {};
@@ -144,6 +144,8 @@ export class TDM extends TSegHolder {
         const tSeg = TSeg.parse(strLeft);
         return new TDM(mds, tSeg, markInd);
     }
+
+    public markType = MarkType.TDM;
 
     constructor(
         public readonly mds: string[],
