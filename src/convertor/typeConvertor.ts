@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import {SupportedTypes} from "../constant";
-import {SchemaNode} from "../schema/schema";
+import {SchemaNode} from "../schema";
 import {Convertor} from "./base";
 import {getPlainConvertor} from "./plainConvertor";
 

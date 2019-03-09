@@ -47,15 +47,43 @@ export function parseTypeSegment(typeSegment: string): SchemaNode[] {
     if (!typeSegment) {
         return [];
     }
+
     if (typeSegment[typeSegment.length - 1] === "?") {
         typeSegment = typeSegment.substring(0, typeSegment.length - 1);
     }
     const typeGroupStr = typeSegment.trim();
+
+    const splitorPoses: Array<[number, number]> = [];
+    for (let i = 0, depth = 0; i < typeGroupStr.length; i++) {
+        switch (typeGroupStr[i]) {
+            case "<":
+                depth += 1;
+                break;
+            case ">":
+                depth -= 1;
+                break;
+            case "|":
+                if (depth === 0) {
+                    splitorPoses.push([
+                        splitorPoses.length > 0 ? splitorPoses[splitorPoses.length - 1][1] : 0,
+                        i,
+                    ]);
+                }
+                break;
+        }
+    }
+    splitorPoses.push([
+            splitorPoses.length > 0 ? splitorPoses[splitorPoses.length - 1][1] : 0,
+            typeGroupStr.length,
+        ],
+    );
+
     if (!typeGroupStr) {
         throw new Error("typeGroup not exist");
     }
-    const typeObjs: SchemaNode[] = typeGroupStr.split("|")
-        .map(getSchemaNode);
+    const typeObjs: SchemaNode[] = splitorPoses.map(
+        (splitorPos) => getSchemaNode(typeGroupStr.substr(...splitorPos)),
+    );
     if (optional) {
         typeObjs.push(new SchemaNode(SupportedTypes.Undefined));
     }
@@ -72,10 +100,10 @@ export function parseTemplate(typeStr: string): { typeNameAlias: string, templat
             templateTypes: parseTypeSegment(typeStr.substr(leftAngle + 1, rightAngle - leftAngle - 1)),
         };
     } else if (leftAngle >= 0 || rightAngle >= 0) {
-        throw new Error(`getTypeName error : angle not match ${typeStr}`);
+        throw new Error(`getTypeName error : angle not match ${typeStr} <(${leftAngle}) >(${rightAngle})`);
     }
     return {
-        typeNameAlias: typeStr.trim(),
+        typeNameAlias: typeStr,
         templateTypes: [],
     };
 }
