@@ -10,8 +10,8 @@ export class TemplateConvertor extends Convertor {
 
     constructor(public readonly schemaNode: SchemaNode) {
         super();
-        if (schemaNode.templateTypeObjects.length > 0) {
-            this.innerConvertor = getConvertor(schemaNode.templateTypeObjects);
+        if (schemaNode.innerCount > 0) {
+            this.innerConvertor = getConvertor(schemaNode.nodes);
         }
     }
 
@@ -58,7 +58,7 @@ export class TypeConvertor extends Convertor {
 
     constructor(public readonly schemaNode: SchemaNode) {
         super();
-        this.useConvertor = this.schemaNode.templateTypeObjects.length <= 0 ?
+        this.useConvertor = this.schemaNode.innerCount <= 0 ?
             getPlainConvertor(this.schemaNode.typeName) :
             new TemplateConvertor(schemaNode);
     }

@@ -9,14 +9,14 @@ describe("parse simple schema", () => {
 
     it("simple unavailable mark", () => {
         const mark = parseMark("aaa");
-        expect(mark.typeObjects.length).to.equal(1);
-        expect(mark.typeObjects[0].typeName).to.equal(SupportedTypes.None);
-        expect(mark.typeObjects[0].templateTypeObjects).to.deep.equal([]);
+        expect(mark.nodes.length).to.equal(1);
+        expect(mark.nodes[0].typeName).to.equal(SupportedTypes.None);
+        expect(mark.nodes[0].nodes).to.deep.equal([]);
     });
 
     it("empty mark", () => {
         const mark = parseMark("");
-        expect(mark.typeObjects.length).to.equal(0);
+        expect(mark.nodes.length).to.equal(0);
     });
 
     const testedKey = [
@@ -34,7 +34,7 @@ describe("parse simple schema", () => {
             AliasTable[key].forEach((v) => {
                 it(key + ": " + v, () => {
                     const mark = parseMark("");
-                    expect(mark.typeObjects.length).to.equal(0);
+                    expect(mark.nodes.length).to.equal(0);
                 });
             });
         });
@@ -46,13 +46,13 @@ describe("parse simple schema", () => {
                 describe(`${SupportedTypes.Array}<${alias}>`, () => {
                     const mark = parseMark(`${SupportedTypes.Array}<${alias}>`);
                     it("parse array", () => {
-                        expect(mark.typeObjects.length).to.equal(1);
-                        expect(mark.typeObjects[0].typeName).to.equal(SupportedTypes.Array);
+                        expect(mark.nodes.length).to.equal(1);
+                        expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Array);
                     });
 
                     it("parse template", () => {
-                        expect(mark.typeObjects[0].templateTypeObjects.length).to.equal(1);
-                        expect(mark.typeObjects[0].templateTypeObjects[0].typeName).to.equal(key);
+                        expect(mark.nodes[0].nodes.length).to.equal(1);
+                        expect(mark.nodes[0].nodes[0].typeName).to.equal(key);
                     });
                 });
             });
@@ -60,18 +60,18 @@ describe("parse simple schema", () => {
 
         it(`${SupportedTypes.Array} without template`, () => {
             const mark = parseMark(SupportedTypes.Array);
-            expect(mark.typeObjects.length).to.equal(1);
-            expect(mark.typeObjects[0].typeName).to.equal(SupportedTypes.Array);
-            expect(mark.typeObjects[0].templateTypeObjects.length).to.equal(0);
+            expect(mark.nodes.length).to.equal(1);
+            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Array);
+            expect(mark.nodes[0].nodes.length).to.equal(0);
         });
 
         it(`${SupportedTypes.Array}<uint|string>`, () => {
             const mark = parseMark(`${SupportedTypes.Array}<uint|string>`);
-            expect(mark.typeObjects.length).to.equal(1);
-            expect(mark.typeObjects[0].typeName).to.equal(SupportedTypes.Array);
-            expect(mark.typeObjects[0].templateTypeObjects.length).to.equal(2);
-            expect(mark.typeObjects[0].templateTypeObjects[0].typeName).to.equal(SupportedTypes.UInt);
-            expect(mark.typeObjects[0].templateTypeObjects[1].typeName).to.equal(SupportedTypes.String);
+            expect(mark.nodes.length).to.equal(1);
+            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Array);
+            expect(mark.nodes[0].nodes.length).to.equal(2);
+            expect(mark.nodes[0].nodes[0].typeName).to.equal(SupportedTypes.UInt);
+            expect(mark.nodes[0].nodes[1].typeName).to.equal(SupportedTypes.String);
         });
 
     });
@@ -82,13 +82,13 @@ describe("parse simple schema", () => {
                 describe(`${SupportedTypes.Pair}<${alias}>`, () => {
                     const mark = parseMark(`${SupportedTypes.Pair}<${alias}>`);
                     it("parse pair", () => {
-                        expect(mark.typeObjects.length).to.equal(1);
-                        expect(mark.typeObjects[0].typeName).to.equal(SupportedTypes.Pair);
+                        expect(mark.nodes.length).to.equal(1);
+                        expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Pair);
                     });
 
                     it("parse template", () => {
-                        expect(mark.typeObjects[0].templateTypeObjects.length).to.equal(1);
-                        expect(mark.typeObjects[0].templateTypeObjects[0].typeName).to.equal(key);
+                        expect(mark.nodes[0].nodes.length).to.equal(1);
+                        expect(mark.nodes[0].nodes[0].typeName).to.equal(key);
                     });
                 });
             });
@@ -96,18 +96,18 @@ describe("parse simple schema", () => {
 
         it(`${SupportedTypes.Pair} without template`, () => {
             const mark = parseMark(SupportedTypes.Pair);
-            expect(mark.typeObjects.length).to.equal(1);
-            expect(mark.typeObjects[0].typeName).to.equal(SupportedTypes.Pair);
-            expect(mark.typeObjects[0].templateTypeObjects.length).to.equal(0);
+            expect(mark.nodes.length).to.equal(1);
+            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Pair);
+            expect(mark.nodes[0].nodes.length).to.equal(0);
         });
 
         it(`${SupportedTypes.Pair}<uint|string>`, () => {
             const mark = parseMark(`${SupportedTypes.Pair}<uint|string>`);
-            expect(mark.typeObjects.length).to.equal(1);
-            expect(mark.typeObjects[0].typeName).to.equal(SupportedTypes.Pair);
-            expect(mark.typeObjects[0].templateTypeObjects.length).to.equal(2);
-            expect(mark.typeObjects[0].templateTypeObjects[0].typeName).to.equal(SupportedTypes.UInt);
-            expect(mark.typeObjects[0].templateTypeObjects[1].typeName).to.equal(SupportedTypes.String);
+            expect(mark.nodes.length).to.equal(1);
+            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Pair);
+            expect(mark.nodes[0].nodes.length).to.equal(2);
+            expect(mark.nodes[0].nodes[0].typeName).to.equal(SupportedTypes.UInt);
+            expect(mark.nodes[0].nodes[1].typeName).to.equal(SupportedTypes.String);
         });
 
     });
@@ -122,9 +122,9 @@ describe("parse simple schema", () => {
                 AliasTable[key].forEach((alias) => {
                     it(`${alias}?`, () => {
                         const mark = parseMark(`${alias}?`);
-                        expect(mark.typeObjects.length).to.equal(2);
-                        expect(mark.typeObjects[0].typeName).to.equal(key);
-                        expect(mark.typeObjects[1].typeName).to.equal(SupportedTypes.Undefined);
+                        expect(mark.nodes.length).to.equal(2);
+                        expect(mark.nodes[0].typeName).to.equal(key);
+                        expect(mark.nodes[1].typeName).to.equal(SupportedTypes.Undefined);
                     });
                 });
             });
@@ -132,11 +132,11 @@ describe("parse simple schema", () => {
 
         it("str|onoff|uint8?", () => {
             const mark = parseMark("str|onoff|uint8?");
-            expect(mark.typeObjects.length).to.equal(4);
-            expect(mark.typeObjects[0].typeName).to.equal(SupportedTypes.String);
-            expect(mark.typeObjects[1].typeName).to.equal(SupportedTypes.Boolean);
-            expect(mark.typeObjects[2].typeName).to.equal(SupportedTypes.UInt);
-            expect(mark.typeObjects[3].typeName).to.equal(SupportedTypes.Undefined);
+            expect(mark.nodes.length).to.equal(4);
+            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.String);
+            expect(mark.nodes[1].typeName).to.equal(SupportedTypes.Boolean);
+            expect(mark.nodes[2].typeName).to.equal(SupportedTypes.UInt);
+            expect(mark.nodes[3].typeName).to.equal(SupportedTypes.Undefined);
         });
 
     });
@@ -145,18 +145,37 @@ describe("parse simple schema", () => {
         const input = `${SupportedTypes.Array}<${SupportedTypes.Array}<${SupportedTypes.Pair}<uint|str?>>|${SupportedTypes.Pair}<float>?>`;
         it(input, () => {
             const mark = parseMark(input);
-            expect(mark.typeObjects.length).to.equal(1);
-            expect(mark.typeObjects[0].typeName).to.equal(SupportedTypes.Array);
-            expect(mark.typeObjects[0].templateTypeObjects.length).to.equal(3);
-            expect(mark.typeObjects[0].templateTypeObjects[0].typeName).to.equal(SupportedTypes.Array);
-            expect(mark.typeObjects[0].templateTypeObjects[1].typeName).to.equal(SupportedTypes.Pair);
-            expect(mark.typeObjects[0].templateTypeObjects[2].typeName).to.equal(SupportedTypes.Undefined);
-            expect(mark.typeObjects[0].templateTypeObjects[0].templateTypeObjects.length).to.equal(1);
-            expect(mark.typeObjects[0].templateTypeObjects[0].templateTypeObjects[0].typeName).to.equal(SupportedTypes.Pair);
-            expect(mark.typeObjects[0].templateTypeObjects[0].templateTypeObjects[0].templateTypeObjects.length).to.equal(3);
-            expect(mark.typeObjects[0].templateTypeObjects[0].templateTypeObjects[0].templateTypeObjects[0].typeName).to.equal(SupportedTypes.UInt);
-            expect(mark.typeObjects[0].templateTypeObjects[0].templateTypeObjects[0].templateTypeObjects[1].typeName).to.equal(SupportedTypes.String);
-            expect(mark.typeObjects[0].templateTypeObjects[0].templateTypeObjects[0].templateTypeObjects[2].typeName).to.equal(SupportedTypes.Undefined);
+            expect(mark.nodes.length).to.equal(1);
+            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Array);
+            expect(mark.nodes[0].nodes.length).to.equal(3);
+            expect(mark.nodes[0].nodes[0].typeName).to.equal(SupportedTypes.Array);
+            expect(mark.nodes[0].nodes[1].typeName).to.equal(SupportedTypes.Pair);
+            expect(mark.nodes[0].nodes[2].typeName).to.equal(SupportedTypes.Undefined);
+            expect(mark.nodes[0].nodes[0].nodes.length).to.equal(1);
+            expect(mark.nodes[0].nodes[0].nodes[0].typeName).to.equal(SupportedTypes.Pair);
+            expect(mark.nodes[0].nodes[0].nodes[0].nodes.length).to.equal(3);
+            expect(mark.nodes[0].nodes[0].nodes[0].nodes[0].typeName).to.equal(SupportedTypes.UInt);
+            expect(mark.nodes[0].nodes[0].nodes[0].nodes[1].typeName).to.equal(SupportedTypes.String);
+            expect(mark.nodes[0].nodes[0].nodes[0].nodes[2].typeName).to.equal(SupportedTypes.Undefined);
+        });
+    });
+
+    describe("schema operation", () => {
+        const input = `${SupportedTypes.Array}<${SupportedTypes.Array}<${SupportedTypes.Pair}<uint|str?>>|${SupportedTypes.Pair}<float>?>`;
+        it(input, () => {
+            const mark = parseMark(input);
+            expect(mark.nodes.length).to.equal(1);
+            expect(mark.nodes[0].typeName).to.equal(SupportedTypes.Array);
+            expect(mark.nodes[0].innerCount).to.equal(3);
+            expect(mark.nodes[0].inner(0).typeName).to.equal(SupportedTypes.Array);
+            expect(mark.nodes[0].inner(1).typeName).to.equal(SupportedTypes.Pair);
+            expect(mark.nodes[0].inner(2).typeName).to.equal(SupportedTypes.Undefined);
+            expect(mark.nodes[0].inner(0).innerCount).to.equal(1);
+            expect(mark.nodes[0].inner(0).inner(0).typeName).to.equal(SupportedTypes.Pair);
+            expect(mark.nodes[0].inner(0).inner(0).innerCount).to.equal(3);
+            expect(mark.nodes[0].inner(0).inner(0).inner(0).typeName).to.equal(SupportedTypes.UInt);
+            expect(mark.nodes[0].inner(0).inner(0).inner(1).typeName).to.equal(SupportedTypes.String);
+            expect(mark.nodes[0].inner(0).inner(0).inner(2).typeName).to.equal(SupportedTypes.Undefined);
         });
     });
 });
