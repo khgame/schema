@@ -76,6 +76,7 @@ describe("Plain Convertor Convert Test", () => {
     describe(SupportedTypes.Float, () => {
         const convertor = getPlainConvertor(SupportedTypes.Float);
         it("receive round", () => {
+            expect(convertor.convert(0)).to.equal(0);
             expect(convertor.convert(1)).to.equal(1);
         });
         it("receive float", () => {

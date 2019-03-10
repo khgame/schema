@@ -79,7 +79,7 @@ console.log(JSON.stringify(conv5g.validate(["222", undefined, undefined, undefin
 const mark6Samples = ["@", "@", "@", "string", "{", "tid", "[", "tid", "]", "}", "[", "{", "tid", "number", "}", "]", "[",
     "Pair<uint>", "Pair<uint>", "Pair<uint>", "]", "Array<float>", "Pair<uint>", "Array<Pair>", "[", "[", "int", "int", "int", "]",
     "[", "[", "bool", "]", "]", "]", "$oneof [", "tid", "bool", "Pair<uint>", "]", "[", "{", "uint", "}", "{", "uint", "}", "]", "uint|string"];
-const mark6Values = [20, "000", "00", "farm", null, 2000001, null, null, null, null, null, null, 1000001, 1, null, null, null,
+const mark6Values = [20, "000", "0", "farm", null, 2000001, null, null, null, null, null, null, 1000001, 1, null, null, null,
     "oil:388", "ore1:1551", "", null, "1|2|3", "tag:0", "tag:0", null, null, 1, 2, 3,
     null, null, null, "Y", null, null, null, null, 111, null, null, null, null, null, 111, null, null, 211, null, null, 1];
 const mark6 = parseSchema(mark6Samples);

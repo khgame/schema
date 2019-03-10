@@ -29,14 +29,14 @@ export const floatConvertor = new PlainConvertor(
     SupportedTypes.Float,
     (cellValue) => {
         const ret = _.toNumber(format(cellValue));
-        return [!!ret && !_.isNaN(ret), ret];
+        return [undefined !== ret && !_.isNaN(ret), ret];
     });
 
 export const ufloatConvertor = new PlainConvertor(
     SupportedTypes.UFloat,
     (cellValue) => {
         const pre = floatConvertor.validate(cellValue);
-        pre[0] = pre[0] && pre[1] > 0;
+        pre[0] = pre[0] && pre[1] >= 0;
         return pre;
     });
 
