@@ -25,17 +25,18 @@ export function MarkConvertorResultToErrorStack(result: [boolean, ISDMConvertRes
         const errorMap: any = {};
         const convertResults: ISDMConvertResult|undefined = result[1];
         if (!convertResults) { return "__UNDEFINED__"; }
-        console.log("convertResults", convertResults);
+        // console.log("convertResults", convertResults);
         for (const markIndStr in convertResults) {
             const markInd = Number(markIndStr);
             const convertResult = convertResults[markInd];
             if (convertResult[0]) {
                 continue;
             }
-            console.log("convertResult", convertResult);
-            errorMap[markInd] = MarkConvertorResultToErrorStack(convertResult);
+            // console.log("convertResult", convertResult);
+            const child = MarkConvertorResultToErrorStack(convertResult);
+            errorMap[markInd] = Object.keys(child).length <= 0 ? convertResult[1] : child;
         }
-        return errorMap;
+        return  errorMap;
     }
 }
 
@@ -91,12 +92,16 @@ export class SDMConvertor extends Convertor {
             }
         }
 
+        function emptyItem(v: any) {
+            return v === undefined || v === null || v === "";
+        }
+
         const allPassed = Object.keys(ret).reduce(
             (aggregate, ind) => aggregate && ret[Number(ind)][0], true);
         const allUndefined = Object.keys(ret).reduce(
-            (aggregate, ind) => aggregate && ret[Number(ind)][1] === undefined, true);
+            (aggregate, ind) => aggregate && emptyItem(ret[Number(ind)][1]), true);
         const allUnpassedUndefined = Object.keys(ret).reduce(
-            (aggregate, ind) => aggregate && (ret[Number(ind)][0] || ret[Number(ind)][1] === undefined), true);
+            (aggregate, ind) => aggregate && (ret[Number(ind)][0] || emptyItem(ret[Number(ind)][1])), true);
         switch (this.sdm.sdmType) {
             case SDMType.Arr:
                 // console.log(`$strict ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds.length}`);

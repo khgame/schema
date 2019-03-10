@@ -67,7 +67,7 @@ console.log(JSON.stringify(validate4s3));
 const mark5 = parseSchema(["str", "[", "{", "uint", "}", "{", "Pair<int?>?", "}", "]", "onoff"]);
 printMark(mark5, "mark5");
 const conv5 = new SDMConvertor(mark5);
-const validate5 = conv5.validate(["222", undefined, undefined, undefined, undefined, undefined, "ok:9", undefined, undefined, "on"])
+const validate5 = conv5.validate(["222", undefined, undefined, undefined, undefined, undefined, "ok:9", undefined, undefined, "on"]);
 console.log(JSON.stringify(validate5));
 console.log("Error Stack :\n", JSON.stringify(MarkConvertorResultToErrorStack(validate5)));
 const mark5g = parseSchema(["str", "[", "$ghost {", "uint", "}", "{", "Pair<int?>?", "}", "]", "onoff"]);
@@ -75,3 +75,13 @@ const mark5g = parseSchema(["str", "[", "$ghost {", "uint", "}", "{", "Pair<int?
 printMark(mark5g, "mark5g");
 const conv5g = new SDMConvertor(mark5g);
 console.log(JSON.stringify(conv5g.validate(["222", undefined, undefined, undefined, undefined, undefined, "ok:9", undefined, undefined, "on"])));
+
+const mark6Samples = ["@", "@", "@", "string", "{", "tid", "[", "tid", "]", "}", "[", "{", "tid", "number", "}", "]", "[",
+    "Pair<uint>", "Pair<uint>", "Pair<uint>", "]", "Array<float>", "Pair<uint>", "Array<Pair>", "[", "[", "int", "int", "int", "]",
+    "[", "[", "bool", "]", "]", "]", "$oneof [", "tid", "bool", "Pair<uint>", "]", "[", "{", "uint", "}", "{", "uint", "}", "]", "uint|string"];
+const mark6Values = [20, "000", "00", "farm", null, 2000001, null, null, null, null, null, null, 1000001, 1, null, null, null,
+    "oil:388", "ore1:1551", "", null, "1|2|3", "tag:0", "tag:0", null, null, 1, 2, 3,
+    null, null, null, "Y", null, null, null, null, 111, null, null, null, null, null, 111, null, null, 211, null, null, 1];
+const mark6 = parseSchema(mark6Samples);
+const conv6 = new SDMConvertor(mark6);
+console.log(JSON.stringify(conv6.validate(mark6Values)));
