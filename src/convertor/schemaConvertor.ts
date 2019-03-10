@@ -46,7 +46,7 @@ export class SDMConvertor extends Convertor {
 
     constructor(public readonly sdm: SDM) {
         super();
-        console.log(`init sdm convertor ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds}`);
+        // console.log(`init sdm convertor ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds}`);
     }
 
     public getConvertor(ind: number) {
@@ -78,7 +78,10 @@ export class SDMConvertor extends Convertor {
             // console.log(">", ind, mark.markInd, "in [", this.sdm.markIndBegin, this.sdm.markIndEnd, ")", mark.mds)
             switch (mark.markType) {
                 case MarkType.SDM:
-                    ret[mark.markInd] = (this.getConvertor(ind) as SDMConvertor).validate(vs);
+                    const sdmResult = (this.getConvertor(ind) as SDMConvertor).validate(vs);
+                    if (sdmResult[1]) { // when it is [true, undefined] ?
+                        ret[mark.markInd] = sdmResult;
+                    }
                     break;
                 case MarkType.TDM:
                     const originValue = vs[mark.markInd];
