@@ -23,9 +23,9 @@ export class SDM implements IMark {
         const marks: IMark[] = [];
         while (ind < markStrs.length) {
             if (SDM.checkBeginMark(markStrs[ind])) {
-                const {mds, strLeft} = parseMD(markStrs[markIndBegin]);
+                const {mds, strLeft} = parseMD(markStrs[ind]);
                 if (strLeft.trim().length > 1) {
-                    throw new Error("SDM Error: a sdm start mark should only contains mds and start quote.");
+                    throw new Error(`SDM Error: the sdm start mark(${strLeft}) should only contains mds and start quote.`);
                 }
                 const subSdmType = strLeft === "{" ? SDMType.Obj : SDMType.Arr;
                 const sdm = SDM.parse(subSdmType, mds, markStrs, ind + 1);
