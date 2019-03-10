@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/khgame/schema#readme",
   "devDependencies": {
+    "@types/lodash": "^4.14.122",
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.6",
     "chai": "^4.2.0",
@@ -36,7 +37,6 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "@types/lodash": "^4.14.122",
     "lodash": "^4.17.11"
   },
   "files": [
