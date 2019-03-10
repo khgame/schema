@@ -6,11 +6,14 @@ export function parseMD(markStr: string) {
 }
 
 export enum MarkType {
-    SDM,
-    TDM,
+    SDM = 0,
+    TDM = 1,
 }
 
 export interface IMark {
     markType: MarkType;
+    markInd: number; // indicates the index in origin marks list
+    mds: string[]; // mark decorators list
     toSchemaStr(): string;
+
 }

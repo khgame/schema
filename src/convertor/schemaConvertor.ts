@@ -1,4 +1,4 @@
-import {MarkType, SDM, TDM} from "../schema";
+import {IMark, MarkType, SDM, SDMType, TDM} from "../schema";
 import {Convertor} from "./base";
 import {TSegConvertor} from "./tSegConvertor";
 import stringify = Mocha.utils.stringify;
@@ -12,50 +12,83 @@ export class TDMConvertor extends TSegConvertor {
 }
 
 export type MarkConvertorError = [number, number, any];
-export type MarkConvertorResult = [boolean, any];
+export type MarkConvertorResult = [boolean, MarkConvertorError | any];
 
 export class SDMConvertor extends Convertor {
 
+    public converLst: Convertor[] = [];
+
     constructor(public readonly sdm: SDM) {
         super();
+        console.log(`init sdm convertor ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds}`);
     }
 
-    public validate(vs: any[]): [boolean, MarkConvertorError | (any[])] {
+    public getConvertor(ind: number) {
+        const mark = this.sdm.marks[ind];
+        if (!mark) {
+            return undefined;
+        }
+        if (this.converLst[ind]) {
+            return this.converLst[ind];
+        }
+        switch (mark.markType) {
+            case MarkType.SDM:
+                this.converLst[ind] = new SDMConvertor(mark as SDM);
+                break;
+            case  MarkType.TDM:
+                this.converLst[ind] = new TDMConvertor(mark as TDM);
+                break;
+        }
+        return this.converLst[ind];
+    }
+
+    public validate(vs: any[]): MarkConvertorResult {
+        // console.log("SDMConvertor.validate", this.sdm.markIndBegin, this.sdm.markIndEnd, JSON.stringify(this.sdm))
+
         const ret: any[] = [];
         for (const i in this.sdm.marks) {
-            switch (this.sdm.marks[i].markType) {
+            const ind = Number(i);
+            const mark: IMark = this.sdm.marks[ind];
+            // console.log(">", ind, mark.markInd, "in [", this.sdm.markIndBegin, this.sdm.markIndEnd, ")", mark.mds)
+            switch (mark.markType) {
                 case MarkType.SDM:
-                    const sdm = this.sdm.marks[i] as SDM;
-                    const sdmValidate = new SDMConvertor(sdm).validate(vs);
+                    const sdmValidate = (this.getConvertor(ind) as SDMConvertor).validate(vs);
                     if (!sdmValidate[0]) {
-                        return [false, [Number(i), sdm.markIndBegin, sdmValidate[1]]];
+                        ret.push([false, [ind, mark.markInd, sdmValidate[1]]]);
                     } else {
-                        ret.push(sdmValidate[1]);
+                        ret.push([true, [ind, mark.markInd, sdmValidate[1]]]);
                     }
                     break;
                 case MarkType.TDM:
-                    const tdm = this.sdm.marks[i] as TDM;
-                    const tdmValidate = new TDMConvertor(tdm).validate(vs[tdm.markInd]);
+                    const originValue = vs[mark.markInd]
+                    const tdmValidate = (this.getConvertor(ind) as TDMConvertor).validate(originValue);
                     if (!tdmValidate[0]) {
-                        return [false, [Number(i), tdm.markInd, vs[tdm.markInd]]];
+                        ret.push([false, [ind, mark.markInd, originValue]]);
                     } else {
-                        ret.push(tdmValidate[1]);
+                        ret.push([true, [ind, mark.markInd, tdmValidate[1]]]);
                     }
                     break;
             }
         }
-        return [true, ret];
+
+        switch (this.sdm.sdmType) {
+            case SDMType.Arr:
+                console.log(`$strict ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds.length}`);
+                if (this.sdm.mds.indexOf("$strict") < 0) {
+                    return [ret.reduce((aggregate, cur) => aggregate && (cur[0] || cur[1][2] === undefined), true), ret];
+                }
+            case SDMType.Obj:
+            default:
+                return [ret.reduce((aggregate, cur) => aggregate && cur[0], true), ret];
+        }
+
     }
 }
 
 export class SchemaConvertor extends SDMConvertor {
 
-    public validate(vs: any[]): [boolean, MarkConvertorError | (any[])] {
+    public validate(vs: any[]): MarkConvertorResult {
         const result = super.validate(vs);
-        if (result[0]) {
-            return [true, result[1][0]];
-        } else {
-            return [false, result[1][2]];
-        }
+        return result[1][0]; // jump over the first object
     }
 }

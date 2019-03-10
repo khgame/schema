@@ -159,4 +159,15 @@ describe("parse simple schema", () => {
             expect(tdmObject.inner(0).inner(0).inner(0).inner(2).tName).to.equal(SupportedTypes.Undefined);
         });
     });
+
+    describe("mds", () => {
+        const input = `$strict int`;
+        it(input, () => {
+            const tdmObject = TDM.parse(input);
+            expect(tdmObject.innerCount).to.equal(1);
+            expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.Int);
+            expect(tdmObject.mds.length).to.equal(1);
+            expect(tdmObject.mds[0]).to.equal("$strict");
+        });
+    });
 });

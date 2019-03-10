@@ -2,8 +2,8 @@ import {TDM} from "./typeDescriptionMark";
 import {IMark, MarkType, parseMD} from "./utils";
 
 export enum SDMType {
-    Obj,
-    Arr,
+    Obj = 0,
+    Arr = 1,
 }
 
 export class SDM implements IMark {
@@ -39,10 +39,15 @@ export class SDM implements IMark {
                 ind++;
             }
         }
+        // console.log("mds => ", mds)
         return new SDM(sdmType, mds, marks, markIndBegin, ind); // reach next index
     }
 
     public markType = MarkType.SDM;
+
+    public get markInd() {
+        return this.markIndBegin; // equal to the first element's position
+    }
 
     constructor(
         public readonly sdmType: SDMType,
@@ -51,6 +56,7 @@ export class SDM implements IMark {
         public readonly markIndBegin: number = 0,
         public readonly markIndEnd: number = -1, // [)
     ) {
+        // console.log("sdm created mds", this.mds, this.marks);
     }
 
     public toSchemaStr() {
