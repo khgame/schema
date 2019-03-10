@@ -9,6 +9,14 @@ export class TDMConvertor extends TSegConvertor {
         super(tdm.tSeg);
     }
 
+    public convert(v: any) {
+        try {
+            super.convert(v);
+        } catch (e) {
+            throw new Error(`tdm[${this.tdm.markInd}] ${e.message}`);
+        }
+    }
+
 }
 
 export type MarkConvertorError = [number, number, any];
@@ -92,7 +100,14 @@ export class SDMConvertor extends Convertor {
                 break;
         }
         return [allPassed, ret];
+    }
 
+    public convert(v: any) {
+        try {
+            super.convert(v);
+        } catch (e) {
+            throw new Error(`sdm[${this.sdm.markIndBegin},${this.sdm.markIndEnd}] ${e.message}`);
+        }
     }
 }
 

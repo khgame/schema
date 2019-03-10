@@ -33,10 +33,12 @@ export class TemplateConvertor extends Convertor {
             }, [true, []]);
         } else if (this.tNode.tName === SupportedTypes.Pair) {
             if (!_.isString(v)) {
-                throw TypeError(`must be string value ${v} of pair that match the schema 'key:val'`);
+                return [false, v];
+                // throw TypeError(`must be string value ${v} of pair that match the schema 'key:val'`);
             }
             if (v.indexOf(":") < 0) {
-                throw TypeError(`must be ${v} of pair that match the schema 'key:val'`);
+                return [false, v];
+                // throw TypeError(`must be ${v} of pair that match the schema 'key:val'`);
             }
             const split = v.split(":").map((s) => s.trim());
             const kv = {
@@ -61,8 +63,8 @@ export class TNodeConvertor extends Convertor {
         this.useConvertor = isTemplateNode(this.tNode) ?
             new TemplateConvertor(this.tNode) :
             getPlainConvertor(this.tNode.tName);
-        if(!this.useConvertor) {
-            throw new Error(`cannot find suitable convertor of tNode ${JSON.stringify(this.tNode)}`)
+        if (!this.useConvertor) {
+            throw new Error(`cannot find suitable convertor of tNode ${JSON.stringify(this.tNode)}`);
         }
     }
 
