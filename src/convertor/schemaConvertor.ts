@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 import {IMark, MarkType, SDM, SDMType, TDM} from "../schema";
 import {Convertor, ConvertResult} from "./base";
 import {TSegConvertor} from "./tSegConvertor";
@@ -33,11 +32,10 @@ export function MarkConvertorResultToErrorStack(result: [boolean, ISDMConvertRes
             if (convertResult[0]) {
                 continue;
             }
-
             console.log("convertResult", convertResult);
             errorMap[markInd] = MarkConvertorResultToErrorStack(convertResult);
-            return errorMap;
         }
+        return errorMap;
     }
 }
 
@@ -122,7 +120,9 @@ export class SDMConvertor extends Convertor {
     public convert(v: any) {
         const validateRet = this.validate(v);
         if (!validateRet[0]) {
-            throw TypeError(`TypeError: type error ${v} => ${validateRet}`);
+            const stack = MarkConvertorResultToErrorStack(validateRet);
+            throw TypeError("Validate Failed : Error Stack :" +
+                JSON.stringify(stack, null, 2));
         }
         return validateRet[1];
     }
