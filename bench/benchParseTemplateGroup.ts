@@ -2,7 +2,12 @@ import {SchemaConvertor, SDMConvertor, TDMConvertor} from "../src/convertor/sche
 import {IMark, parseSchema, SDM, TDM} from "../src/schema";
 
 function printMark(mark: IMark, name = "") {
-    console.log(">>> ", name, "\n- Schema: ", mark.toSchemaStr(), "\n- Instance:", JSON.stringify(mark), "\n<<<\n");
+    console.log(
+        ">>> ", name,
+        "\n- SchemaStr: ", mark.toSchemaStr(),
+        "\n- SchemaJson: ", JSON.stringify(mark.toSchemaJson()),
+        "\n- Instance:", JSON.stringify(mark),
+        "\n<<<\n");
 }
 
 const mark1 = TDM.parse("$oneof $const Array<uint|string>");
@@ -30,7 +35,6 @@ console.log(JSON.stringify(conv4s.validate([undefined, "as", "8", undefined, 12,
 console.log(JSON.stringify(conv4s.validate([undefined, "as", "8", undefined, 12, undefined, true, undefined, undefined])));
 console.log(JSON.stringify(conv4s.validate([undefined, "as", "8", undefined, 12, 122, undefined, undefined, undefined])));
 
-
 // [ int int ]
 // _ 1 1 _
 // _ 1 _ _ => [ 1, undefined ] ; exception OR [ 1 ] ; ok
@@ -55,11 +59,11 @@ console.log(JSON.stringify(conv4s.validate([undefined, "as", "8", undefined, 12,
 //           1   _ => {key1: 1, key2: undefined} ; exception
 //           _   _ => undefined
 
-const mark5 = parseSchema(["str", "[", "{", "uint", "}", "{", "uint", "}", "]", "onoff"]);
+const mark5 = parseSchema(["str", "[", "{", "uint", "}", "{", "Pair<int?>?", "}", "]", "onoff"]);
 printMark(mark5, "mark5");
 const conv5 = new SDMConvertor(mark5);
-console.log(JSON.stringify(conv5.validate(["222", undefined, undefined, undefined, undefined, undefined, "9", undefined, undefined, "on"])));
-const mark5g = parseSchema(["str", "[", "$ghost {", "uint", "}", "{", "uint", "}", "]", "onoff"]);
+console.log(JSON.stringify(conv5.validate(["222", undefined, undefined, undefined, undefined, undefined, "ok:9", undefined, undefined, "on"])));
+const mark5g = parseSchema(["str", "[", "$ghost {", "uint", "}", "{", "Pair<int?>?", "}", "]", "onoff"]);
 printMark(mark5g, "mark5g");
 const conv5g = new SDMConvertor(mark5g);
-console.log(JSON.stringify(conv5g.validate(["222", undefined, undefined, undefined, undefined, undefined, "9", undefined, undefined, "on"])));
+console.log(JSON.stringify(conv5g.validate(["222", undefined, undefined, undefined, undefined, undefined, "ok:9", undefined, undefined, "on"])));

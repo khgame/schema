@@ -15,5 +15,5 @@ export interface IMark {
     markInd: number; // indicates the index in origin marks list
     mds: string[]; // mark decorators list
     toSchemaStr(): string;
-
+    toSchemaJson(): any;
 }

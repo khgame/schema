@@ -135,6 +135,16 @@ export class TNode extends TSegHolder {
         const segStr: string = this.tSeg.toSchemaStr();
         return segStr ? `${this.tName}<${segStr}>` : `${this.tName}`;
     }
+
+    public toSchemaJson(): any {
+        if (!this.tName) {
+            throw new Error("the type dose not exit");
+        }
+        return this.innerCount <= 0 ? this.tName : {
+            tName: this.tName,
+            innerTypes: this.tSeg.nodes.map((m) => m.toSchemaJson()),
+        };
+    }
 }
 
 export class TDM extends TSegHolder {
@@ -159,5 +169,14 @@ export class TDM extends TSegHolder {
         return `${
             this.mds.reduce((prev, cur) => prev + " " + cur, "").substr(1)} ${
             this.tSeg.toSchemaStr()}`.trim();
+    }
+
+    public toSchemaJson() {
+        return {
+            mds: this.mds.length > 0 ? this.mds : undefined,
+            ind: this.markInd,
+            tName: this.innerCount === 1 ? this.inner(0).toSchemaJson() : undefined,
+            types: this.innerCount > 1 ? this.tSeg.nodes.map((m) => m.toSchemaJson()): undefined,
+        };
     }
 }

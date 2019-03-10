@@ -66,4 +66,12 @@ export class SDM implements IMark {
             this.marks.reduce((prev, cur) => prev + ", " + cur.toSchemaStr(), "").substr(1).trim()} ${
             this.sdmType === SDMType.Obj ? "}" : "]"}`.trim();
     }
+
+    public toSchemaJson() {
+        return {
+            mds: this.mds.length > 0 ? this.mds : undefined,
+            fromTo: [this.markIndBegin, this.markIndEnd],
+            children: this.marks.map((m) => m.toSchemaJson()),
+        };
+    }
 }
