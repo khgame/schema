@@ -26,12 +26,11 @@ export class TemplateConvertor extends Convertor {
     public validate(v: any): [boolean, any] {
         if (this.tNode.tName === SupportedTypes.Array) {
             const items = !v ? [] : ((!_.isString(v) || v.indexOf("|") < 0) ? [v] : v.split("|").map((s) => s.trim()));
-            const result = items.map((item) => this.useConvertor.validate(item)).reduce((prev, item) => {
+            return items.map((item) => this.useConvertor.validate(item)).reduce((prev, item) => {
                 prev[0] = prev[0] && item[0];
                 prev[1].push(item[1]);
                 return prev;
             }, [true, []]);
-            return result;
         } else if (this.tNode.tName === SupportedTypes.Pair) {
             if (!_.isString(v)) {
                 throw TypeError(`must be string value ${v} of pair that match the schema 'key:val'`);
