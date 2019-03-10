@@ -1,7 +1,9 @@
 import {IMark, MarkType, SDM, SDMType, TDM} from "../schema";
-import {Convertor} from "./base";
+import {Convertor, ConvertResult} from "./base";
 import {TSegConvertor} from "./tSegConvertor";
 import stringify = Mocha.utils.stringify;
+
+export type SDMConvertResult = [boolean, [number, number, any]];
 
 export class TDMConvertor extends TSegConvertor {
 
@@ -19,8 +21,9 @@ export class TDMConvertor extends TSegConvertor {
 
 }
 
-export type MarkConvertorError = [number, number, any];
-export type MarkConvertorResult = [boolean, MarkConvertorError | any];
+export function MarkConvertorResultToString(convertResult: SDMConvertResult|ConvertResult) {
+
+}
 
 export class SDMConvertor extends Convertor {
 
@@ -50,10 +53,10 @@ export class SDMConvertor extends Convertor {
         return this.converLst[ind];
     }
 
-    public validate(vs: any[]): MarkConvertorResult {
+    public validate(vs: any[]): SDMConvertResult|ConvertResult {
         // console.log("SDMConvertor.validate", this.sdm.markIndBegin, this.sdm.markIndEnd, JSON.stringify(this.sdm))
 
-        const ret: MarkConvertorResult[] = [];
+        const ret: SDMConvertResult[] = [];
         for (const i in this.sdm.marks) {
             const ind = Number(i);
             const mark: IMark = this.sdm.marks[ind];
@@ -86,7 +89,7 @@ export class SDMConvertor extends Convertor {
             case SDMType.Arr:
                 // console.log(`$strict ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds.length}`);
                 if (this.sdm.mds.indexOf("$ghost") >= 0 && allUndefined) {
-                    return [true, undefined];
+                    return [true, undefined]; // just like a tdm
                 }
                 if (this.sdm.mds.indexOf("$strict") < 0 && allUnpassedUndefined) {
                     return [true, ret];
@@ -95,7 +98,7 @@ export class SDMConvertor extends Convertor {
             case SDMType.Obj:
                 // console.log(`$ghost ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds.length}`);
                 if (this.sdm.mds.indexOf("$ghost") >= 0 && allUndefined) {
-                    return [true, undefined];
+                    return [true, undefined]; // just like a tdm
                 }
                 break;
         }
@@ -103,17 +106,17 @@ export class SDMConvertor extends Convertor {
     }
 
     public convert(v: any) {
-        try {
-            super.convert(v);
-        } catch (e) {
-            throw new Error(`sdm[${this.sdm.markIndBegin},${this.sdm.markIndEnd}] ${e.message}`);
+        const validateRet = this.validate(v);
+        if (!validateRet[0]) {
+            throw TypeError(`TypeError: type error ${v} => ${validateRet}`);
         }
+        return validateRet[1];
     }
 }
 
 export class SchemaConvertor extends SDMConvertor {
 
-    public validate(vs: any[]): MarkConvertorResult {
+    public validate(vs: any[]): SDMConvertResult|ConvertResult {
         const result = super.validate(vs);
         return result[1]; // jump over the first object
     }

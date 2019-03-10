@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import {SupportedTypes} from "../constant";
 import {TNode, TSeg} from "../schema";
-import {Convertor} from "./base";
+import {Convertor, ConvertResult} from "./base";
 import {getPlainConvertor} from "./plainConvertor";
 
 function isTemplateNode(tNode: TNode) {
@@ -23,7 +23,7 @@ export class TemplateConvertor extends Convertor {
         }
     }
 
-    public validate(v: any): [boolean, any] {
+    public validate(v: any): ConvertResult {
         if (this.tNode.tName === SupportedTypes.Array) {
             const items = !v ? [] : ((!_.isString(v) || v.indexOf("|") < 0) ? [v] : v.split("|").map((s) => s.trim()));
             return items.map((item) => this.useConvertor.validate(item)).reduce((prev, item) => {
@@ -82,7 +82,7 @@ export class TSegConvertor extends Convertor {
         this.convertors = tSeg.nodes.map((tNode) => new TNodeConvertor(tNode));
     }
 
-    public validate(v: any): [boolean, any] {
+    public validate(v: any): ConvertResult {
         for (const i in this.convertors) {
             const ret = this.convertors[i].validate(v);
             if (ret[0]) {

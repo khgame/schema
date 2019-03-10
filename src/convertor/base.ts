@@ -4,6 +4,8 @@ export interface IConvertor {
     validate(v: any): [boolean, any];
 }
 
+export type ConvertResult = [boolean, any];
+
 export abstract class Convertor implements IConvertor {
     public convert(v: any) {
         const validateRet = this.validate(v);
@@ -13,5 +15,5 @@ export abstract class Convertor implements IConvertor {
         return validateRet[1];
     }
 
-    public abstract validate(v: any): [boolean, any];
+    public abstract validate(v: any): ConvertResult;
 }
