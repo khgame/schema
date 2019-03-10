@@ -29,3 +29,37 @@ const conv4s = new SchemaConvertor(mark4s);
 console.log(JSON.stringify(conv4s.validate([undefined, "as", "8", undefined, 12, -22, true, undefined, undefined])));
 console.log(JSON.stringify(conv4s.validate([undefined, "as", "8", undefined, 12, undefined, true, undefined, undefined])));
 console.log(JSON.stringify(conv4s.validate([undefined, "as", "8", undefined, 12, 122, undefined, undefined, undefined])));
+
+
+// [ int int ]
+// _ 1 1 _
+// _ 1 _ _ => [ 1, undefined ] ; exception OR [ 1 ] ; ok
+
+// $strict [ int int ]
+// _ 1 1 _
+// _ 1 _ _ ; exception
+
+// { int int }
+// _ 1 1 _
+// _ 1 _ _ ; exception
+
+// [ { int int } ]
+// keys ...
+// _ _  1   1  _ _ => [ {key: 1, key: 1}]
+// _ _  _   1  _ _ => [ {key: undefined, key: 1}] ; exception
+// _ _  _   _  _ _ => [ {key: undefined, key: undefined}] ; exception OR [ ] ; ok
+
+// $ghost { int int }
+// keys ...
+//           1   1 => {key1: 1, key2: 2}
+//           1   _ => {key1: 1, key2: undefined} ; exception
+//           _   _ => undefined
+
+const mark5 = parseSchema(["str", "[", "{", "uint", "}", "{", "uint", "}", "]", "onoff"]);
+printMark(mark5, "mark5");
+const conv5 = new SDMConvertor(mark5);
+console.log(JSON.stringify(conv5.validate(["222", undefined, undefined, undefined, undefined, undefined, "9", undefined, undefined, "on"])));
+const mark5g = parseSchema(["str", "[", "$ghost {", "uint", "}", "{", "uint", "}", "]", "onoff"]);
+printMark(mark5g, "mark5g");
+const conv5g = new SDMConvertor(mark5g);
+console.log(JSON.stringify(conv5g.validate(["222", undefined, undefined, undefined, undefined, undefined, "9", undefined, undefined, "on"])));

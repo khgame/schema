@@ -45,7 +45,7 @@ export class SDMConvertor extends Convertor {
     public validate(vs: any[]): MarkConvertorResult {
         // console.log("SDMConvertor.validate", this.sdm.markIndBegin, this.sdm.markIndEnd, JSON.stringify(this.sdm))
 
-        const ret: any[] = [];
+        const ret: MarkConvertorResult[] = [];
         for (const i in this.sdm.marks) {
             const ind = Number(i);
             const mark: IMark = this.sdm.marks[ind];
@@ -60,7 +60,7 @@ export class SDMConvertor extends Convertor {
                     }
                     break;
                 case MarkType.TDM:
-                    const originValue = vs[mark.markInd]
+                    const originValue = vs[mark.markInd];
                     const tdmValidate = (this.getConvertor(ind) as TDMConvertor).validate(originValue);
                     if (!tdmValidate[0]) {
                         ret.push([false, [ind, mark.markInd, originValue]]);
@@ -71,16 +71,27 @@ export class SDMConvertor extends Convertor {
             }
         }
 
+        const allPassed = ret.reduce((aggregate, cur) => aggregate && cur[0], true);
+        const allUndefined = ret.reduce((aggregate, cur) => aggregate && cur[1][2] === undefined, true);
+        const allUnpassedUndefined = ret.reduce((aggregate, cur) => aggregate && (cur[0] || cur[1][2] === undefined), true);
         switch (this.sdm.sdmType) {
             case SDMType.Arr:
-                console.log(`$strict ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds.length}`);
-                if (this.sdm.mds.indexOf("$strict") < 0) {
-                    return [ret.reduce((aggregate, cur) => aggregate && (cur[0] || cur[1][2] === undefined), true), ret];
+                // console.log(`$strict ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds.length}`);
+                if (this.sdm.mds.indexOf("$ghost") >= 0 && allUndefined) {
+                    return [true, undefined];
                 }
+                if (this.sdm.mds.indexOf("$strict") < 0 && allUnpassedUndefined) {
+                    return [true, ret];
+                }
+                break;
             case SDMType.Obj:
-            default:
-                return [ret.reduce((aggregate, cur) => aggregate && cur[0], true), ret];
+                // console.log(`$ghost ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds.length}`);
+                if (this.sdm.mds.indexOf("$ghost") >= 0 && allUndefined) {
+                    return [true, undefined];
+                }
+                break;
         }
+        return [allPassed, ret];
 
     }
 }
@@ -89,6 +100,6 @@ export class SchemaConvertor extends SDMConvertor {
 
     public validate(vs: any[]): MarkConvertorResult {
         const result = super.validate(vs);
-        return result[1][0]; // jump over the first object
+        return result[1]; // jump over the first object
     }
 }
