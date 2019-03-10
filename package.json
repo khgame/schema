@@ -6,7 +6,8 @@
   "scripts": {
     "test": "npx mocha -r ./node_modules/ts-node/register ./test/**/*.ts",
     "lint:fix": "npx tslint --fix --project .",
-    "build": "rimraf ./lib && npx tsc"
+    "build": "rimraf ./lib && npx tsc",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
