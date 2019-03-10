@@ -1,9 +1,9 @@
+import * as _ from "lodash";
 import {IMark, MarkType, SDM, SDMType, TDM} from "../schema";
 import {Convertor, ConvertResult} from "./base";
 import {TSegConvertor} from "./tSegConvertor";
-import stringify = Mocha.utils.stringify;
 
-export type SDMConvertResult = [boolean, [number, number, any]];
+export interface ISDMConvertResult {[markInd: number]: ConvertResult; }
 
 export class TDMConvertor extends TSegConvertor {
 
@@ -21,8 +21,24 @@ export class TDMConvertor extends TSegConvertor {
 
 }
 
-export function MarkConvertorResultToString(convertResult: SDMConvertResult|ConvertResult) {
+export function MarkConvertorResultToErrorStack(result: [boolean, ISDMConvertResult|undefined]): any {
+    if (!result[0]) { // when convertResult[0] is false, convertResult[1] is the error info
+        const errorMap: any = {};
+        const convertResults: ISDMConvertResult|undefined = result[1];
+        if (!convertResults) { return "__UNDEFINED__"; }
+        console.log("convertResults", convertResults);
+        for (const markIndStr in convertResults) {
+            const markInd = Number(markIndStr);
+            const convertResult = convertResults[markInd];
+            if (convertResult[0]) {
+                continue;
+            }
 
+            console.log("convertResult", convertResult);
+            errorMap[markInd] = MarkConvertorResultToErrorStack(convertResult);
+            return errorMap;
+        }
+    }
 }
 
 export class SDMConvertor extends Convertor {
@@ -53,38 +69,36 @@ export class SDMConvertor extends Convertor {
         return this.converLst[ind];
     }
 
-    public validate(vs: any[]): SDMConvertResult|ConvertResult {
+    public validate(vs: any[]): [boolean, ISDMConvertResult|undefined] {
         // console.log("SDMConvertor.validate", this.sdm.markIndBegin, this.sdm.markIndEnd, JSON.stringify(this.sdm))
 
-        const ret: SDMConvertResult[] = [];
+        const ret: any = {};
         for (const i in this.sdm.marks) {
             const ind = Number(i);
             const mark: IMark = this.sdm.marks[ind];
             // console.log(">", ind, mark.markInd, "in [", this.sdm.markIndBegin, this.sdm.markIndEnd, ")", mark.mds)
             switch (mark.markType) {
                 case MarkType.SDM:
-                    const sdmValidate = (this.getConvertor(ind) as SDMConvertor).validate(vs);
-                    if (!sdmValidate[0]) {
-                        ret.push([false, [ind, mark.markInd, sdmValidate[1]]]);
-                    } else {
-                        ret.push([true, [ind, mark.markInd, sdmValidate[1]]]);
-                    }
+                    ret[mark.markInd] = (this.getConvertor(ind) as SDMConvertor).validate(vs);
                     break;
                 case MarkType.TDM:
                     const originValue = vs[mark.markInd];
                     const tdmValidate = (this.getConvertor(ind) as TDMConvertor).validate(originValue);
                     if (!tdmValidate[0]) {
-                        ret.push([false, [ind, mark.markInd, originValue]]);
+                        ret[mark.markInd] = [false, originValue]; // when failed, record originValue
                     } else {
-                        ret.push([true, [ind, mark.markInd, tdmValidate[1]]]);
+                        ret[mark.markInd] = tdmValidate;
                     }
                     break;
             }
         }
 
-        const allPassed = ret.reduce((aggregate, cur) => aggregate && cur[0], true);
-        const allUndefined = ret.reduce((aggregate, cur) => aggregate && cur[1][2] === undefined, true);
-        const allUnpassedUndefined = ret.reduce((aggregate, cur) => aggregate && (cur[0] || cur[1][2] === undefined), true);
+        const allPassed = Object.keys(ret).reduce(
+            (aggregate, ind) => aggregate && ret[Number(ind)][0], true);
+        const allUndefined = Object.keys(ret).reduce(
+            (aggregate, ind) => aggregate && ret[Number(ind)][1] === undefined, true);
+        const allUnpassedUndefined = Object.keys(ret).reduce(
+            (aggregate, ind) => aggregate && (ret[Number(ind)][0] || ret[Number(ind)][1] === undefined), true);
         switch (this.sdm.sdmType) {
             case SDMType.Arr:
                 // console.log(`$strict ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds.length}`);
@@ -116,8 +130,8 @@ export class SDMConvertor extends Convertor {
 
 export class SchemaConvertor extends SDMConvertor {
 
-    public validate(vs: any[]): SDMConvertResult|ConvertResult {
-        const result = super.validate(vs);
-        return result[1]; // jump over the first object
-    }
+    // public validate(vs: any[]):[boolean, SDMConvertResult|undefined] {
+    //     const result = super.validate(vs);
+    //     return result; // jump over the first object
+    // }
 }

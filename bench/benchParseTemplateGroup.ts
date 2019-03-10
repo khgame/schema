@@ -1,4 +1,9 @@
-import {SchemaConvertor, SDMConvertor, TDMConvertor} from "../src/convertor/schemaConvertor";
+import {
+    MarkConvertorResultToErrorStack,
+    SchemaConvertor,
+    SDMConvertor,
+    TDMConvertor,
+} from "../src/convertor/schemaConvertor";
 import {IMark, parseSchema, SDM, TDM} from "../src/schema";
 
 function printMark(mark: IMark, name = "") {
@@ -33,8 +38,8 @@ printMark(mark4s, "mark4s");
 const conv4s = new SchemaConvertor(mark4s);
 console.log(JSON.stringify(conv4s.validate([undefined, "as", "8", undefined, 12, -22, true, undefined, undefined])));
 console.log(JSON.stringify(conv4s.validate([undefined, "as", "8", undefined, 12, undefined, true, undefined, undefined])));
-console.log(JSON.stringify(conv4s.validate([undefined, "as", "8", undefined, 12, 122, undefined, undefined, undefined])));
-
+const validate4s3 = conv4s.validate([undefined, "as", "8", undefined, 12, 122, undefined, undefined, undefined]);
+console.log(JSON.stringify(validate4s3));
 // [ int int ]
 // _ 1 1 _
 // _ 1 _ _ => [ 1, undefined ] ; exception OR [ 1 ] ; ok
@@ -62,8 +67,11 @@ console.log(JSON.stringify(conv4s.validate([undefined, "as", "8", undefined, 12,
 const mark5 = parseSchema(["str", "[", "{", "uint", "}", "{", "Pair<int?>?", "}", "]", "onoff"]);
 printMark(mark5, "mark5");
 const conv5 = new SDMConvertor(mark5);
-console.log(JSON.stringify(conv5.validate(["222", undefined, undefined, undefined, undefined, undefined, "ok:9", undefined, undefined, "on"])));
+const validate5 = conv5.validate(["222", undefined, undefined, undefined, undefined, undefined, "ok:9", undefined, undefined, "on"])
+console.log(JSON.stringify(validate5));
+console.log("Error Stack :\n", JSON.stringify(MarkConvertorResultToErrorStack(validate5)));
 const mark5g = parseSchema(["str", "[", "$ghost {", "uint", "}", "{", "Pair<int?>?", "}", "]", "onoff"]);
+
 printMark(mark5g, "mark5g");
 const conv5g = new SDMConvertor(mark5g);
 console.log(JSON.stringify(conv5g.validate(["222", undefined, undefined, undefined, undefined, undefined, "ok:9", undefined, undefined, "on"])));
