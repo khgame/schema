@@ -7,24 +7,44 @@
 
 ## design
 
-### schema
+### definition
 
 #### names
 
-- SDM: Structure Description Mark
-- TDM: Type Description Mark
-- MD: Mark Decorator
-- TSeg: Type Description Mark Segment
+- Mark: what filled in a mark line slot
+- SDM: **S**tructure **D**escription **M**ark
+- TDM: **T**ype **D**escription **M**ark
+- ArrSDM: SDM that presented an array `[...]`
+- ObjSDM: SDM that presented an object `{...}`
+- MD: **M**ark **D**ecorator
+- TSeg: Types segment
+- TName: Type name
 
-### definition
 
 ```yaml
 Schema: Mark+
 Mark: SDM | TDM
-SDM: (<MD* '['> Schema ']') | (<MD* '{'> Schema '}')
+SDM: ArrSDM | ObjSDM
+ArrSDM: <MD* '['> Schema ']'
+ObjSDM: <MD* '{'> Schema '}'
 TDM: <MD* TSeg>
 TSeg: TNode ('|' TNode)*
 TNode: TName '<' TSeg '>' 
 MD: /\$[a-zA-Z0-9_\-]+/
 TName: /[a-zA-Z_][a-zA-Z0-9_]*/
 ```
+
+### decorators
+
+#### ArrSDM
+
+- $strict
+- $ghost
+
+#### ObjSDM
+
+- $ghost
+
+#### TDM
+
+*(none)*
