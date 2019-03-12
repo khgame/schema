@@ -14,6 +14,9 @@ describe("Plain Convertor Convert Test", () => {
         it("receive string", () => {
             expect(convertor.convert("aaa")).to.equal("aaa");
         });
+        it("receive 0", () => {
+            expect(convertor.convert(0)).to.equal(0);
+        });
         it("receive undefined", () => {
             expect(convertor.convert(undefined)).to.equal(undefined);
         });
@@ -31,6 +34,9 @@ describe("Plain Convertor Convert Test", () => {
         it("receive number", () => {
             expect(convertor.convert(1)).to.equal("1");
             expect(convertor.convert(-1.22)).to.equal("-1.22");
+        });
+        it("receive 0", () => {
+            expect(convertor.convert(0)).to.equal("0");
         });
         it("receive string", () => {
             expect(convertor.convert("aaa")).to.equal("aaa");
@@ -51,6 +57,9 @@ describe("Plain Convertor Convert Test", () => {
         const convertor = getPlainConvertor(SupportedTypes.Boolean);
         it("receive number", () => {
             expect(convertor.convert(1)).to.equal(true);
+            expect(convertor.convert(2.398)).to.equal(true);
+        });
+        it("receive 0", () => {
             expect(convertor.convert(0)).to.equal(false);
         });
         it("receive string aaa|y|yes|t|true|on", () => {
@@ -76,8 +85,10 @@ describe("Plain Convertor Convert Test", () => {
     describe(SupportedTypes.Float, () => {
         const convertor = getPlainConvertor(SupportedTypes.Float);
         it("receive round", () => {
-            expect(convertor.convert(0)).to.equal(0);
             expect(convertor.convert(1)).to.equal(1);
+        });
+        it("receive 0", () => {
+            expect(convertor.convert(0)).to.equal(0);
         });
         it("receive float", () => {
             expect(convertor.convert(1.123123)).to.equal(1.123123);
@@ -107,6 +118,9 @@ describe("Plain Convertor Convert Test", () => {
             expect(convertor.convert(1.123123)).to.equal(1.123123);
             expect(() => convertor.convert(-1.123123)).to.throw(Error);
         });
+        it("receive 0", () => {
+            expect(convertor.convert(0)).to.equal(0);
+        });
         it("receive number string", () => {
             expect(convertor.convert("1.2")).to.equal(1.2);
             expect(() => convertor.convert("-1.2")).to.throw(Error);
@@ -126,6 +140,9 @@ describe("Plain Convertor Convert Test", () => {
             expect(convertor.convert(1)).to.equal(1);
             expect(() => convertor.convert(1.123123)).to.throw(Error);
             expect(convertor.convert(-1)).to.equal(-1);
+        });
+        it("receive 0", () => {
+            expect(convertor.convert(0)).to.equal(0);
         });
         it("receive number string", () => {
             expect(convertor.convert("1")).to.equal(1);
@@ -147,6 +164,9 @@ describe("Plain Convertor Convert Test", () => {
             expect(() => convertor.convert(1.123123)).to.throw(Error);
             expect(() => convertor.convert(-1)).to.throw(Error);
         });
+        it("receive 0", () => {
+            expect(convertor.convert(0)).to.equal(0);
+        });
         it("receive number string", () => {
             expect(convertor.convert("1")).to.equal(1);
             expect(() => convertor.convert("-1")).to.throw(Error);
@@ -165,6 +185,9 @@ describe("Plain Convertor Convert Test", () => {
         const convertor = getPlainConvertor(SupportedTypes.Undefined);
         it("receive undefined", () => {
             expect(convertor.convert(undefined)).to.equal(undefined);
+        });
+        it("receive 0", () => {
+            expect(() => convertor.convert(0)).to.throw(Error);
         });
         it("receive float", () => {
             expect(() => convertor.convert(1.123123)).to.throw(Error);

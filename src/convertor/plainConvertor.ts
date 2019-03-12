@@ -19,11 +19,11 @@ export class PlainConvertor extends Convertor {
 
 export const strConvertor = new PlainConvertor(
     SupportedTypes.String,
-    (cellValue) => [!!cellValue, _.toString(cellValue)]); // 不允许空串
+    (cellValue) => [cellValue !== null && cellValue !== undefined, _.toString(cellValue)]); // 不允许空串
 
 export const undefinedConvertor = new PlainConvertor(
     SupportedTypes.Undefined,
-    (cellValue) => [!cellValue, undefined]);
+    (cellValue) => [cellValue === null || cellValue === undefined, undefined]);
 
 export const floatConvertor = new PlainConvertor(
     SupportedTypes.Float,
