@@ -44,7 +44,11 @@ export const intConvertor = new PlainConvertor(
     SupportedTypes.Int,
     (cellValue) => {
         const pre = floatConvertor.validate(cellValue);
-        pre[0] = pre[0] && _.isInteger(pre[1]);
+        const intValue = Math.round(pre[1]);
+        pre[0] = pre[0] && Math.abs(intValue - pre[1]) < 0.0000000000001;
+        if (pre[0]) {
+            pre[1] = intValue;
+        }
         return pre;
     });
 
@@ -52,7 +56,11 @@ export const uintConvertor = new PlainConvertor(
     SupportedTypes.UInt,
     (cellValue) => {
         const pre = ufloatConvertor.validate(cellValue);
-        pre[0] = pre[0] && _.isInteger(pre[1]);
+        const intValue = Math.round(pre[1]);
+        pre[0] = pre[0] && Math.abs(intValue - pre[1]) < 0.0000000000001;
+        if (pre[0]) {
+            pre[1] = intValue;
+        }
         return pre;
     });
 

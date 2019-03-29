@@ -1,10 +1,10 @@
 {
   "name": "@khgame/schema",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "schema",
   "main": "lib/index.js",
   "scripts": {
-    "test": "npx mocha -r ./node_modules/ts-node/register ./test/**/*.ts",
+    "test": "nyc mocha -r ./node_modules/ts-node/register ./test/**/*.ts",
     "lint:fix": "npx tslint --fix --project .",
     "build": "rimraf ./lib && npx tsc",
     "prepublishOnly": "npm run build"
@@ -26,11 +26,12 @@
   },
   "homepage": "https://github.com/khgame/schema#readme",
   "devDependencies": {
-    "@types/lodash": "^4.14.122",
     "@types/chai": "^4.1.7",
+    "@types/lodash": "^4.14.122",
     "@types/mocha": "^5.2.6",
     "chai": "^4.2.0",
     "mocha": "^6.0.2",
+    "nyc": "^13.3.0",
     "rimraf": "^2.6.3",
     "ts-node": "^8.0.3",
     "tslint": "^5.13.1",
