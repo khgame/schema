@@ -6,6 +6,8 @@ const plainConvertors: { [typeStr: string]: PlainConvertor } = {};
 
 export const format = (v: any) => _.isString(v) ? v.toLowerCase().trim() : v;
 
+export const isEmpty = (v: any) => v === undefined || v === null || (_.isString(v) && v.trim() === "");
+
 export function getPlainConvertor(typeStr: string) {
     return plainConvertors[typeStr];
 }
@@ -28,6 +30,9 @@ export const undefinedConvertor = new PlainConvertor(
 export const floatConvertor = new PlainConvertor(
     SupportedTypes.Float,
     (cellValue) => {
+        if (isEmpty(cellValue)) {
+            return [false, cellValue];
+        }
         const ret = _.toNumber(format(cellValue));
         return [undefined !== ret && !_.isNaN(ret), ret];
     });

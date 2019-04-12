@@ -68,8 +68,12 @@ describe("Plain Convertor Validate Test", () => {
         it("receive non-number string", () => {
             expect(convertor.validate("y")).to.deep.equal([false, NaN]);
         });
+        it("receive empty string", () => {
+            expect(convertor.validate("")).to.deep.equal([false, ""]);
+            expect(convertor.validate("  ")).to.deep.equal([false, "  "]);
+        });
         it("receive undefined", () => {
-            expect(convertor.validate(undefined)).to.deep.equal([false, NaN]);
+            expect(convertor.validate(undefined)).to.deep.equal([false, undefined]);
         });
     });
 

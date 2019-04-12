@@ -1,8 +1,11 @@
 import {IMark, MarkType, SDM, SDMType, TDM} from "../schema";
 import {Convertor, ConvertResult} from "./base";
+import {isEmpty} from "./plainConvertor";
 import {TSegConvertor} from "./tSegConvertor";
 
-export interface ISDMConvertResult {[markInd: number]: ConvertResult; }
+export interface ISDMConvertResult {
+    [markInd: number]: ConvertResult;
+}
 
 export class TDMConvertor extends TSegConvertor {
 
@@ -17,14 +20,15 @@ export class TDMConvertor extends TSegConvertor {
             throw new Error(`tdm[${this.tdm.markInd}] ${e.message}`);
         }
     }
-
 }
 
-export function MarkConvertorResultToErrorStack(result: [boolean, ISDMConvertResult|undefined]): any {
+export function MarkConvertorResultToErrorStack(result: [boolean, ISDMConvertResult | undefined]): any {
     if (!result[0]) { // when convertResult[0] is false, convertResult[1] is the error info
         const errorMap: any = {};
-        const convertResults: ISDMConvertResult|undefined = result[1];
-        if (!convertResults) { return "__UNDEFINED__"; }
+        const convertResults: ISDMConvertResult | undefined = result[1];
+        if (!convertResults) {
+            return "__UNDEFINED__";
+        }
         // console.log("convertResults", convertResults);
         for (const markIndStr in convertResults) {
             const markInd = Number(markIndStr);
@@ -36,7 +40,7 @@ export function MarkConvertorResultToErrorStack(result: [boolean, ISDMConvertRes
             const child = MarkConvertorResultToErrorStack(convertResult);
             errorMap[markInd] = Object.keys(child).length <= 0 ? convertResult[1] : child;
         }
-        return  errorMap;
+        return errorMap;
     }
 }
 
@@ -68,7 +72,7 @@ export class SDMConvertor extends Convertor {
         return this.converLst[ind];
     }
 
-    public validate(vs: any[]): [boolean, ISDMConvertResult|undefined] {
+    public validate(vs: any[]): [boolean, ISDMConvertResult | undefined] {
         // console.log("SDMConvertor.validate", this.sdm.markIndBegin, this.sdm.markIndEnd, JSON.stringify(this.sdm))
 
         const ret: any = {};
@@ -95,16 +99,12 @@ export class SDMConvertor extends Convertor {
             }
         }
 
-        function emptyItem(v: any) {
-            return v === undefined || v === null || v === "";
-        }
-
         const allPassed = Object.keys(ret).reduce(
             (aggregate, ind) => aggregate && ret[Number(ind)][0], true);
         const allUndefined = Object.keys(ret).reduce(
-            (aggregate, ind) => aggregate && emptyItem(ret[Number(ind)][1]), true);
+            (aggregate, ind) => aggregate && isEmpty(ret[Number(ind)][1]), true);
         const allUnpassedUndefined = Object.keys(ret).reduce(
-            (aggregate, ind) => aggregate && (ret[Number(ind)][0] || emptyItem(ret[Number(ind)][1])), true);
+            (aggregate, ind) => aggregate && (ret[Number(ind)][0] || isEmpty(ret[Number(ind)][1])), true);
         switch (this.sdm.sdmType) {
             case SDMType.Arr:
                 // console.log(`$strict ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds.length}`);
