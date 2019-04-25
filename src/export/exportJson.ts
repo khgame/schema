@@ -3,11 +3,11 @@ import {ISDMConvertResult, MarkConvertorResultToErrorStack, SchemaConvertor} fro
 import {MarkType, SDM, SDMType} from "../schema";
 
 interface IMarkDesc {
-    row?: string[];
+    row?: Array<string|number>;
     col?: string[];
 }
 
-export function exportJson(schema: SDM, descList: Array<string|undefined>, convertedRows: any[][], markDescriptor: IMarkDesc = {}) {
+export function exportJson(schema: SDM, descList: Array<string|undefined|null>, convertedRows: any[][], markDescriptor: IMarkDesc = {}) {
 
     // console.log('markList:\n', JSON.stringify(markList))
     const convertor = new SchemaConvertor(schema);
@@ -68,11 +68,15 @@ export function exportJson(schema: SDM, descList: Array<string|undefined>, conve
     const tids = [];
     for (const lineInd in convertedRows) {
         const values = convertedRows[lineInd];
-        // console.log('--\n', JSON.stringify(values))
+        // console.log("-- values ", lineInd, ":\n", JSON.stringify(values));
         const validate = convertor.validate(values);
+
         if (!validate[0]) {
             const errorStack = MarkConvertorResultToErrorStack(validate);
-            console.log(`error: parse row failed; row - ${RowOfMInd(Number(lineInd))}\nstack:\n${JSON.stringify(replaceErrorStack(errorStack), null, 2)}`);
+
+            console.log(`error: parse row failed; row - ${RowOfMInd(Number(lineInd))}`);
+            // console.log("values", values);
+            console.log("stack\n", JSON.stringify(replaceErrorStack(errorStack), null, 2));
             continue;
         }
         const converted = convertor.convert(values);

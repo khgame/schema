@@ -108,6 +108,14 @@ describe("Plain Convertor Validate Test", () => {
         it("receive undefined", () => {
             expect(convertor.validate(undefined)).to.deep.equal([true, undefined]);
         });
+        it("receive null", () => {
+            expect(convertor.validate(null)).to.deep.equal([true, undefined]);
+        });
+        it("receive empty string", () => {
+            expect(convertor.validate("")).to.deep.equal([true, undefined]);
+            expect(convertor.validate(" ")).to.deep.equal([true, undefined]);
+            expect(convertor.validate("     ")).to.deep.equal([true, undefined]);
+        });
     });
 
     describe("default situation", () => {

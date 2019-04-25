@@ -25,7 +25,7 @@ export const strConvertor = new PlainConvertor(
 
 export const undefinedConvertor = new PlainConvertor(
     SupportedTypes.Undefined,
-    (cellValue) => [cellValue === null || cellValue === undefined, undefined]);
+    (cellValue) => [cellValue === null || cellValue === undefined || (typeof cellValue === "string" && cellValue.trim() === ""), undefined]);
 
 export const floatConvertor = new PlainConvertor(
     SupportedTypes.Float,
