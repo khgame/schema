@@ -7,7 +7,8 @@
     "test": "nyc mocha -r ./node_modules/ts-node/register ./test/**/*.ts",
     "lint:fix": "npx tslint --fix --project .",
     "build": "rimraf ./lib && npx tsc",
-    "prepublishOnly": "npm run test && npm run build"
+    "prepublishOnly": "npm run test && npm run build",
+    "ex:zero-in-arr": "ts-node ./example/zeroInArr"
   },
   "repository": {
     "type": "git",
