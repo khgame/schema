@@ -76,6 +76,8 @@ export class SDMConvertor extends Convertor {
         // console.log("SDMConvertor.validate", this.sdm.markIndBegin, this.sdm.markIndEnd, JSON.stringify(this.sdm))
 
         const ret: any = {};
+
+        /** validate all */
         for (const i in this.sdm.marks) {
             const ind = Number(i);
             const mark: IMark = this.sdm.marks[ind];
@@ -83,6 +85,7 @@ export class SDMConvertor extends Convertor {
             switch (mark.markType) {
                 case MarkType.SDM:
                     const sdmResult = (this.getConvertor(ind) as SDMConvertor).validate(vs);
+
                     if (sdmResult[1]) { // when it is [true, undefined] ?
                         ret[mark.markInd] = sdmResult;
                     }
@@ -103,21 +106,21 @@ export class SDMConvertor extends Convertor {
             (aggregate, ind) => aggregate && ret[Number(ind)][0], true);
         const allUndefined = Object.keys(ret).reduce(
             (aggregate, ind) => aggregate && isEmpty(ret[Number(ind)][1]), true);
-        const allUnpassedUndefined = Object.keys(ret).reduce(
+        const allUnPassedUndefined = Object.keys(ret).reduce(
             (aggregate, ind) => aggregate && (ret[Number(ind)][0] || isEmpty(ret[Number(ind)][1])), true);
         switch (this.sdm.sdmType) {
             case SDMType.Arr:
-                // console.log(`$strict ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds.length}`);
-                if (this.sdm.mds.indexOf("$ghost") >= 0 && allUndefined) {
+                // console.log("arr ", this.sdm.markIndBegin + " " + this.sdm.markIndEnd + " " + this.sdm.mds.length, ret);
+                if (this.sdm.hasDecorator("$ghost") && allUndefined) { // $ghost tag exist, when it's all undefined, returns undefined
                     return [true, undefined]; // just like a tdm
                 }
-                if (this.sdm.mds.indexOf("$strict") < 0 && allUnpassedUndefined) {
+                if (!this.sdm.hasDecorator("$strict") && allUnPassedUndefined) {
                     return [true, ret];
                 }
                 break;
             case SDMType.Obj:
                 // console.log(`$ghost ${this.sdm.markIndBegin} ${this.sdm.markIndEnd} ${this.sdm.mds.length}`);
-                if (this.sdm.mds.indexOf("$ghost") >= 0 && allUndefined) {
+                if (this.sdm.hasDecorator("$ghost") && allUndefined) {
                     return [true, undefined]; // just like a tdm
                 }
                 break;

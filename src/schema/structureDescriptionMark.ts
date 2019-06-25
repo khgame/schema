@@ -59,6 +59,10 @@ export class SDM implements IMark {
         // console.log("sdm created mds", this.mds, this.marks);
     }
 
+    public hasDecorator(decorator: string) {
+        return this.mds.indexOf(decorator) >= 0;
+    }
+
     public toSchemaStr() {
         return `${
             this.mds.reduce((prev, cur) => prev + " " + cur, "").substr(1)} ${

@@ -34,6 +34,9 @@ export const floatConvertor = new PlainConvertor(
             return [false, cellValue];
         }
         const ret = _.toNumber(format(cellValue));
+        if (_.isNaN(ret)) { // its not empty, and parsed as NAN
+            throw new Error(`ERROR!! : NAN detected => ${cellValue}`);
+        }
         return [undefined !== ret && !_.isNaN(ret), ret];
     });
 

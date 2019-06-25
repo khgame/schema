@@ -34,8 +34,8 @@ export function exportJson(schema: SDM, descList: Array<string|undefined|null>, 
 
         function setValue(markInd: number, value: any) {
             if (sdm.sdmType === SDMType.Arr) {
-                const strict = sdm.mds.indexOf("$strict") >= 0;
-                if (value || strict) {
+                const strict = sdm.hasDecorator("$strict");
+                if (value !== undefined || strict) { // todo:
                     retArr.push(value);
                 }
             } else {
@@ -74,7 +74,7 @@ export function exportJson(schema: SDM, descList: Array<string|undefined|null>, 
         if (!validate[0]) {
             const errorStack = MarkConvertorResultToErrorStack(validate);
 
-            console.log(`error: parse row failed; row - ${RowOfMInd(Number(lineInd))}`);
+            console.warn(`error: parse row failed; row - ${RowOfMInd(Number(lineInd))}`);
             // console.log("values", values);
             console.log("stack\n", JSON.stringify(replaceErrorStack(errorStack), null, 2));
             continue;
@@ -84,6 +84,7 @@ export function exportJson(schema: SDM, descList: Array<string|undefined|null>, 
         if (!converted) {
             console.log(``);
         } else {
+            // console.log("createObject =[ ", lineInd, JSON.stringify(converted))
             result[lineInd] = createObject(converted, schema);
         }
     }
