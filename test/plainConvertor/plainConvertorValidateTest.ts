@@ -3,6 +3,7 @@ import "mocha";
 
 import {SupportedTypes} from "../../src/constant";
 import {getPlainConvertor} from "../../src/convertor";
+import {Error} from "tslint/lib/error";
 
 describe("Plain Convertor Validate Test", () => {
     describe(SupportedTypes.Any, () => {
@@ -66,7 +67,8 @@ describe("Plain Convertor Validate Test", () => {
             expect(convertor.validate("-1.2")).to.deep.equal([true, -1.2]);
         });
         it("receive non-number string", () => {
-            expect(convertor.validate("y")).to.deep.equal([false, NaN]);
+            expect(() => convertor.validate("y")).to.throw(Error);
+            // expect(convertor.validate("y")).to.throw([false, NaN]);
         });
         it("receive empty string", () => {
             expect(convertor.validate("")).to.deep.equal([false, ""]);
