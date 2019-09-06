@@ -11,6 +11,10 @@ function reverseAlias() {
     return ret;
 }
 
+export interface IContext {
+    enums?: { [enumName: string]: { [key: string]: string | number } };
+}
+
 export const reverseAliasTable = reverseAlias();
 
 export function getTypeNameByAlias(typeNameAlias: string) {
@@ -19,7 +23,8 @@ export function getTypeNameByAlias(typeNameAlias: string) {
 
 export class TSegHolder {
 
-    constructor(public readonly tSeg: TSeg) {
+    constructor(public readonly tSeg: TSeg,
+                public readonly context?: IContext) {
 
     }
 
@@ -34,7 +39,7 @@ export class TSegHolder {
 
 export class TSeg {
 
-    public static parse(strTSeg: string): TSeg {
+    public static parse(strTSeg: string, context?: IContext): TSeg {
         let optional = false;
         if (!strTSeg) {
             return new TSeg();
@@ -74,17 +79,20 @@ export class TSeg {
         if (!typeGroupStr) {
             throw new Error("typeGroup not exist");
         }
-        const nodes: TNode[] = splitorPoses.map(
-            (splitorPos) => TNode.parse(typeGroupStr.substr(splitorPos[0], splitorPos[1] - splitorPos[0])),
+        const nodes: TNode[] = splitorPoses.map(([from, to]: [number, number]) => TNode.parse(
+                typeGroupStr.substr(from, to - from),
+                context,
+            ),
         );
         if (optional) {
-            nodes.push(new TNode(SupportedTypes.Undefined));
+            nodes.push(TNode.parse(SupportedTypes.Undefined, context));
         }
         return new TSeg(nodes);
     }
 
     constructor(
         public readonly nodes: TNode[] = [],
+        public readonly context?: IContext,
     ) {
     }
 
@@ -107,19 +115,27 @@ export class TSeg {
 export class TNode extends TSegHolder {
 
     /** create node from mark string */
-    public static parse(strTNode: string): TNode {
+    public static parse(strTNode: string, context?: IContext): TNode {
         // parse template
         strTNode = strTNode.trim();
         const leftAngle = strTNode.indexOf("<");
         const rightAngle = strTNode[strTNode.length - 1] === ">" ? strTNode.length - 1 : -1;
+
         if (leftAngle >= 0 && rightAngle >= 0) {
-            return new TNode(strTNode.substr(0, leftAngle).trim(),
-                TSeg.parse(strTNode.substr(leftAngle + 1, rightAngle - leftAngle - 1)),
+            return new TNode(
+                strTNode.substr(0, leftAngle).trim(),
+                TSeg.parse(strTNode.substr(leftAngle + 1, rightAngle - leftAngle - 1), context),
+                context,
             );
         } else if (leftAngle >= 0 || rightAngle >= 0) {
             throw new Error(`getTypeName error : angle not match ${strTNode} <(${leftAngle}) >(${rightAngle})`);
         }
-        return new TNode(strTNode);
+
+        return new TNode(
+            strTNode,
+            new TSeg(),
+            context,
+        );
     }
 
     /**
@@ -134,11 +150,12 @@ export class TNode extends TSegHolder {
      */
     public tName: string = "";
 
-    constructor(
+    protected constructor(
         name: string,
-        public readonly tSeg: TSeg = new TSeg(),
+        public readonly tSeg: TSeg,
+        public context?: IContext,
     ) {
-        super(tSeg);
+        super(tSeg, context);
         this.rawName = name.trim();
         this.tName = getTypeNameByAlias(this.rawName.toLowerCase());
     }
@@ -164,10 +181,10 @@ export class TNode extends TSegHolder {
 
 export class TDM extends TSegHolder {
 
-    public static parse(strTDM: string, markInd: number = 0): TDM {
+    public static parse(strTDM: string, markInd: number = 0, context?: IContext): TDM {
         const {mds, strLeft} = parseMD(strTDM);
-        const tSeg = TSeg.parse(strLeft);
-        return new TDM(mds, tSeg, markInd);
+        const tSeg = TSeg.parse(strLeft, context);
+        return new TDM(mds, tSeg, markInd, context);
     }
 
     public markType = MarkType.TDM;
@@ -176,8 +193,9 @@ export class TDM extends TSegHolder {
         public readonly mds: string[],
         public readonly tSeg: TSeg,
         public readonly markInd: number = 0,
+        public context?: IContext,
     ) {
-        super(tSeg);
+        super(tSeg, context);
     }
 
     public toSchemaStr() {

@@ -1,4 +1,4 @@
-import {TDM} from "./typeDescriptionMark";
+import {IContext, TDM} from "./typeDescriptionMark";
 import {IMark, MarkType, parseMD} from "./utils";
 
 export enum SDMType {
@@ -18,7 +18,13 @@ export class SDM implements IMark {
         return mark[mark.length - 1] === "}" || mark[mark.length - 1] === "]";
     }
 
-    public static parse(sdmType: SDMType, mds: string[], markStrs: string[], markIndBegin: number = 0): SDM {
+    public static parse(
+        sdmType: SDMType,
+        mds: string[],
+        markStrs: string[],
+        markIndBegin: number = 0,
+        context?: IContext,
+    ): SDM {
         let ind = markIndBegin;
         const marks: IMark[] = [];
         while (ind < markStrs.length) {
@@ -28,13 +34,13 @@ export class SDM implements IMark {
                     throw new Error(`SDM Error: the sdm start mark(${strLeft}) should only contains mds and start quote.`);
                 }
                 const subSdmType = strLeft === "{" ? SDMType.Obj : SDMType.Arr;
-                const sdm = SDM.parse(subSdmType, mds, markStrs, ind + 1);
+                const sdm = SDM.parse(subSdmType, mds, markStrs, ind + 1, context);
                 marks.push(sdm);
                 ind = sdm.markIndEnd + 1; // cuz the return value will consider the end quote : [)
             } else if (SDM.checkEndMark(markStrs[ind])) {
                 break;
             } else {
-                const tdm = TDM.parse(markStrs[ind], ind);
+                const tdm = TDM.parse(markStrs[ind], ind, context);
                 marks.push(tdm);
                 ind++;
             }
