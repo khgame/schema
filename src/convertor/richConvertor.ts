@@ -79,18 +79,27 @@ export class EnumConvertor extends Convertor {
         return name === SupportedTypes.Enum;
     }
 
-    public enumNames: string[];
+    public enumNames: { [key: string]: any } = {};
 
     constructor(public readonly tSeg: TSeg) {
         super();
-        this.enumNames = tSeg.nodes.map((tNode) => tNode.rawName);
+        tSeg.nodes.forEach((tNode) => {
+            if (tSeg.context && tSeg.context.enums && tNode.rawName in tSeg.context.enums) {
+                for (const key in tSeg.context.enums) {
+                    this.enumNames[key] = tSeg.context.enums[tNode.rawName][key];
+                }
+            } else {
+                this.enumNames[tNode.rawName] = tNode.rawName;
+            }
+        });
     }
 
     public validate(v: any): ConvertResult {
         for (const i in this.enumNames) {
-            const ret = [("" + v).trim().toLowerCase() === this.enumNames[i].toLowerCase(), this.enumNames[i]] as ConvertResult;
-            if (ret[0]) {
-                return ret;
+            const input = ("" + v).trim().toLowerCase();
+            const meet = input === this.enumNames[i].toLowerCase();
+            if (meet) {
+                return [true, this.enumNames[input]];
             }
         }
         return [false, v];

@@ -1,5 +1,6 @@
 import {AliasTable, SupportedTypes} from "../constant";
 import {MarkType, parseMD} from "./utils";
+import * as _ from "lodash";
 
 function reverseAlias() {
     const ret: { [typeStr: string]: string } = {};
@@ -79,15 +80,17 @@ export class TSeg {
         if (!typeGroupStr) {
             throw new Error("typeGroup not exist");
         }
-        const nodes: TNode[] = splitorPoses.map(([from, to]: [number, number]) => TNode.parse(
-                typeGroupStr.substr(from, to - from),
-                context,
-            ),
-        );
+        const tNodes: TNode[] = [];
+        const tNodeStrs = splitorPoses.map(([from, to]: [number, number]) => typeGroupStr.substr(from, to - from));
+
+        tNodeStrs.forEach((str: string) => {
+            tNodes.push(TNode.parse(str, context));
+        });
+
         if (optional) {
-            nodes.push(TNode.parse(SupportedTypes.Undefined, context));
+            tNodes.push(TNode.parse(SupportedTypes.Undefined, context));
         }
-        return new TSeg(nodes);
+        return new TSeg(tNodes);
     }
 
     constructor(
@@ -152,7 +155,7 @@ export class TNode extends TSegHolder {
 
     protected constructor(
         name: string,
-        public readonly tSeg: TSeg,
+        public tSeg: TSeg,
         public context?: IContext,
     ) {
         super(tSeg, context);
@@ -191,7 +194,7 @@ export class TDM extends TSegHolder {
 
     constructor(
         public readonly mds: string[],
-        public readonly tSeg: TSeg,
+        public tSeg: TSeg,
         public readonly markInd: number = 0,
         public context?: IContext,
     ) {

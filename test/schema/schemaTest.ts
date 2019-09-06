@@ -124,6 +124,15 @@ describe("parse simple schema", () => {
             expect(tdmObject.inner(0).inner(1).rawName).to.equal("BBB");
         });
 
+        it(`${SupportedTypes.Enum}<ENUM_VALUE> with context`, () => {
+            const tdmObject = TDM.parse(`${SupportedTypes.Enum}<ENUM_VALUE>`, 0, { enums: { ENUM_VALUE: { AAA: 1, BBB: 2 } }});
+            expect(tdmObject.innerCount).to.equal(1);
+            expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.Enum);
+            expect(tdmObject.inner(0).innerCount).to.equal(1);
+            expect(tdmObject.inner(0).inner(0).tName).to.equal(SupportedTypes.None);
+            expect(tdmObject.inner(0).inner(0).rawName).to.equal("ENUM_VALUE");
+        });
+
     });
 
     describe("Optional", () => {
