@@ -18,6 +18,7 @@ export function getTypeNameByAlias(typeNameAlias: string) {
 }
 
 export class TSegHolder {
+
     constructor(public readonly tSeg: TSeg) {
 
     }
@@ -105,35 +106,33 @@ export class TSeg {
 
 export class TNode extends TSegHolder {
 
+    /** create node from mark string */
     public static parse(strTNode: string): TNode {
         // parse template
         strTNode = strTNode.toLowerCase().trim();
         const leftAngle = strTNode.indexOf("<");
         const rightAngle = strTNode[strTNode.length - 1] === ">" ? strTNode.length - 1 : -1;
         if (leftAngle >= 0 && rightAngle >= 0) {
-            return TNode.create(
+            return new TNode(
                 strTNode.substr(0, leftAngle).trim(),
                 TSeg.parse(strTNode.substr(leftAngle + 1, rightAngle - leftAngle - 1)),
             );
         } else if (leftAngle >= 0 || rightAngle >= 0) {
             throw new Error(`getTypeName error : angle not match ${strTNode} <(${leftAngle}) >(${rightAngle})`);
         }
-        return TNode.create(strTNode);
-    }
-
-    public static create(rawName: string, tSeg: TSeg = new TSeg()): TNode {
-        const ret = new TNode(getTypeNameByAlias(rawName), tSeg);
-        ret.rawName = rawName;
-        return ret;
+        return new TNode(strTNode);
     }
 
     public rawName: string = "";
+    public tName: string = "";
 
     constructor(
-        public readonly tName: string,
+        name: string,
         public readonly tSeg: TSeg = new TSeg(),
     ) {
         super(tSeg);
+        this.rawName = name.trim().toLowerCase();
+        this.tName = getTypeNameByAlias(this.rawName);
     }
 
     public toSchemaStr() {

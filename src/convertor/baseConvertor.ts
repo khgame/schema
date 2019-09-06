@@ -4,6 +4,9 @@ export interface IConvertor {
     validate(v: any): [boolean, any];
 }
 
+/**
+ * [ <can be convert ?>, <converted result> ]
+ */
 export type ConvertResult = [boolean, any];
 
 export abstract class Convertor implements IConvertor {
@@ -15,5 +18,10 @@ export abstract class Convertor implements IConvertor {
         return validateRet[1];
     }
 
+    /**
+     * validate if input can be convert
+     * @param v
+     * @return {ConvertResult}
+     */
     public abstract validate(v: any): ConvertResult;
 }

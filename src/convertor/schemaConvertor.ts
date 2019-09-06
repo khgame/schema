@@ -1,5 +1,5 @@
 import {IMark, MarkType, SDM, SDMType, TDM} from "../schema";
-import {Convertor, ConvertResult} from "./base";
+import {Convertor, ConvertResult} from "./baseConvertor";
 import {isEmpty} from "./plainConvertor";
 import {TSegConvertor} from "./tSegConvertor";
 

@@ -112,6 +112,20 @@ describe("parse simple schema", () => {
 
     });
 
+    describe("Enum", () => {
+        it(`${SupportedTypes.Enum}<AAA|BBB>`, () => {
+            const tdmObject = TDM.parse(`${SupportedTypes.Enum}<AAA|BBB>`);
+            expect(tdmObject.innerCount).to.equal(1);
+            expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.Enum);
+            expect(tdmObject.inner(0).innerCount).to.equal(2);
+            expect(tdmObject.inner(0).inner(0).tName).to.equal(SupportedTypes.None);
+            expect(tdmObject.inner(0).inner(1).tName).to.equal(SupportedTypes.None);
+            expect(tdmObject.inner(0).inner(0).rawName).to.equal("aaa");
+            expect(tdmObject.inner(0).inner(1).rawName).to.equal("bbb");
+        });
+
+    });
+
     describe("Optional", () => {
         it("optional without typeSegment", () => {
             expect(() => TDM.parse("?")).to.throw(Error);

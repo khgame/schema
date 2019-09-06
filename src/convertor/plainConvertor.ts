@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import {SupportedTypes, TrueType} from "../constant";
-import {Convertor} from "./base";
+import {Convertor} from "./baseConvertor";
 
 const plainConvertors: { [typeStr: string]: PlainConvertor } = {};
 

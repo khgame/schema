@@ -1,21 +1,21 @@
 import * as _ from "lodash";
 import {SupportedTypes} from "../constant";
 import {TNode, TSeg} from "../schema";
-import {Convertor, ConvertResult} from "./base";
+import {Convertor, ConvertResult} from "./baseConvertor";
 import {getPlainConvertor} from "./plainConvertor";
 
-function isTemplateNode(tNode: TNode) {
-    return tNode.tName === SupportedTypes.Pair || tNode.tName === SupportedTypes.Array || tNode.tName === SupportedTypes.Enum ;
-}
-
 export class TemplateConvertor extends Convertor {
+
+    public static testName(name: string) {
+        return name === SupportedTypes.Pair || name === SupportedTypes.Array;
+    }
 
     public useConvertor: Convertor;
 
     constructor(public readonly tNode: TNode) {
         super();
         if (tNode.innerCount <= 0) {
-            this.useConvertor = getPlainConvertor(SupportedTypes.Any); // if template filled with empty, fallback to any
+            this.useConvertor = getPlainConvertor(SupportedTypes.Any); // if template filled with empty, fallback to any. todo: should it be something like this?
         } else if (tNode.innerCount === 1) {
             this.useConvertor = new TNodeConvertor(tNode.inner(0));
         } else {
@@ -53,25 +53,6 @@ export class TemplateConvertor extends Convertor {
     }
 }
 
-export class TNodeConvertor extends Convertor {
-
-    public useConvertor: Convertor;
-
-    constructor(public readonly tNode: TNode) {
-        super();
-        this.useConvertor = isTemplateNode(this.tNode) ?
-            new TemplateConvertor(this.tNode) :
-            getPlainConvertor(this.tNode.tName);
-        if (!this.useConvertor) {
-            throw new Error(`cannot find suitable convertor of tNode ${JSON.stringify(this.tNode)}`);
-        }
-    }
-
-    public validate(v: any) {
-        return this.useConvertor.validate(v);
-    }
-}
-
 export class TSegConvertor extends Convertor {
 
     public convertors: Convertor[];
@@ -89,5 +70,55 @@ export class TSegConvertor extends Convertor {
             }
         }
         return [false, undefined];
+    }
+}
+
+export class EnumConvertor extends Convertor {
+
+    public static testName(name: string) {
+        return name === SupportedTypes.Enum;
+    }
+
+    public enumNames: string[];
+
+    constructor(public readonly tSeg: TSeg) {
+        super();
+        this.enumNames = tSeg.nodes.map((tNode) => tNode.rawName);
+    }
+
+    public validate(v: any): ConvertResult {
+        for (const i in this.enumNames) {
+            const ret = [("" + v).trim().toLowerCase() === this.enumNames[i], this.enumNames[i]] as ConvertResult;
+            if (ret[0]) {
+                return ret;
+            }
+        }
+        return [false, v];
+    }
+}
+
+export class TNodeConvertor extends Convertor {
+
+    public useConvertor: Convertor;
+
+    constructor(public readonly tNode: TNode) {
+        super();
+
+        if (TemplateConvertor.testName(this.tNode.tName)) {
+            this.useConvertor = new TemplateConvertor(this.tNode);
+        }
+        else if (EnumConvertor.testName(this.tNode.tName)) {
+            this.useConvertor = new EnumConvertor(this.tNode.tSeg);
+        } else {
+            this.useConvertor = getPlainConvertor(this.tNode.tName);
+        }
+
+        if (!this.useConvertor) {
+            throw new Error(`cannot find suitable convertor of tNode ${JSON.stringify(this.tNode)}`);
+        }
+    }
+
+    public validate(v: any) {
+        return this.useConvertor.validate(v);
     }
 }
