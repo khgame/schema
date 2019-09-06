@@ -81,12 +81,13 @@ export class EnumConvertor extends Convertor {
 
     public enumNames: { [key: string]: any } = {};
 
-    constructor(public readonly tSeg: TSeg) {
+    constructor(public readonly tNode: TNode) {
         super();
-        tSeg.nodes.forEach((tNode) => {
-            if (tSeg.context && tSeg.context.enums && tNode.rawName in tSeg.context.enums) {
-                for (const key in tSeg.context.enums) {
-                    this.enumNames[key] = tSeg.context.enums[tNode.rawName][key];
+        tNode.tSeg.nodes.forEach((tNode) => {
+            let enumTable;
+            if (tNode.context && tNode.context.enums && (enumTable = tNode.context.enums[tNode.rawName])) {
+                for (const key in enumTable) {
+                    this.enumNames[key] = enumTable[key];
                 }
             } else {
                 this.enumNames[tNode.rawName] = tNode.rawName;
@@ -95,11 +96,11 @@ export class EnumConvertor extends Convertor {
     }
 
     public validate(v: any): ConvertResult {
-        for (const i in this.enumNames) {
+        for (const key in this.enumNames) {
             const input = ("" + v).trim().toLowerCase();
-            const meet = input === this.enumNames[i].toLowerCase();
+            const meet = input === key.toLowerCase();
             if (meet) {
-                return [true, this.enumNames[input]];
+                return [true, this.enumNames[key]];
             }
         }
         return [false, v];
@@ -116,7 +117,7 @@ export class TNodeConvertor extends Convertor {
         if (TemplateConvertor.testName(this.tNode.tName)) {
             this.useConvertor = new TemplateConvertor(this.tNode);
         } else if (EnumConvertor.testName(this.tNode.tName)) {
-            this.useConvertor = new EnumConvertor(this.tNode.tSeg);
+            this.useConvertor = new EnumConvertor(this.tNode);
         } else {
             this.useConvertor = getPlainConvertor(this.tNode.tName);
         }

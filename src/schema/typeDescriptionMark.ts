@@ -95,7 +95,6 @@ export class TSeg {
 
     constructor(
         public readonly nodes: TNode[] = [],
-        public readonly context?: IContext,
     ) {
     }
 
