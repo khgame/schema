@@ -1,13 +1,13 @@
 import {IMark, MarkType, SDM, SDMType, TDM} from "../schema";
 import {Convertor, ConvertResult} from "./baseConvertor";
 import {isEmpty} from "./plainConvertor";
-import {TSegConvertor} from "./tSegConvertor";
+import {RichConvertor} from "./richConvertor";
 
 export interface ISDMConvertResult {
     [markInd: number]: ConvertResult;
 }
 
-export class TDMConvertor extends TSegConvertor {
+export class TDMConvertor extends RichConvertor {
 
     constructor(public readonly tdm: TDM) {
         super(tdm.tSeg);

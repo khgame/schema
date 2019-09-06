@@ -19,7 +19,7 @@ export class TemplateConvertor extends Convertor {
         } else if (tNode.innerCount === 1) {
             this.useConvertor = new TNodeConvertor(tNode.inner(0));
         } else {
-            this.useConvertor = new TSegConvertor(tNode.tSeg);
+            this.useConvertor = new RichConvertor(tNode.tSeg);
         }
     }
 
@@ -53,7 +53,7 @@ export class TemplateConvertor extends Convertor {
     }
 }
 
-export class TSegConvertor extends Convertor {
+export class RichConvertor extends Convertor {
 
     public convertors: Convertor[];
 
@@ -106,8 +106,7 @@ export class TNodeConvertor extends Convertor {
 
         if (TemplateConvertor.testName(this.tNode.tName)) {
             this.useConvertor = new TemplateConvertor(this.tNode);
-        }
-        else if (EnumConvertor.testName(this.tNode.tName)) {
+        } else if (EnumConvertor.testName(this.tNode.tName)) {
             this.useConvertor = new EnumConvertor(this.tNode.tSeg);
         } else {
             this.useConvertor = getPlainConvertor(this.tNode.tName);
