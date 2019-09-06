@@ -83,6 +83,7 @@ export class EnumConvertor extends Convertor {
 
     constructor(public readonly tNode: TNode) {
         super();
+        // console.log("rawName", tNode.rawName);
         tNode.tSeg.nodes.forEach((tNode) => {
             let enumTable;
             if (tNode.context && tNode.context.enums && (enumTable = tNode.context.enums[tNode.rawName])) {
@@ -93,6 +94,7 @@ export class EnumConvertor extends Convertor {
                 this.enumNames[tNode.rawName] = tNode.rawName;
             }
         });
+        // console.log("enumNames", this.enumNames);
     }
 
     public validate(v: any): ConvertResult {
