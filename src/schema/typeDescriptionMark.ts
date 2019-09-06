@@ -109,12 +109,11 @@ export class TNode extends TSegHolder {
     /** create node from mark string */
     public static parse(strTNode: string): TNode {
         // parse template
-        strTNode = strTNode.toLowerCase().trim();
+        strTNode = strTNode.trim();
         const leftAngle = strTNode.indexOf("<");
         const rightAngle = strTNode[strTNode.length - 1] === ">" ? strTNode.length - 1 : -1;
         if (leftAngle >= 0 && rightAngle >= 0) {
-            return new TNode(
-                strTNode.substr(0, leftAngle).trim(),
+            return new TNode(strTNode.substr(0, leftAngle).trim(),
                 TSeg.parse(strTNode.substr(leftAngle + 1, rightAngle - leftAngle - 1)),
             );
         } else if (leftAngle >= 0 || rightAngle >= 0) {
@@ -123,7 +122,16 @@ export class TNode extends TSegHolder {
         return new TNode(strTNode);
     }
 
+    /**
+     * the type mark in inputs, who will strict equal to the trimmed str of the mark
+     * @type {string}
+     */
     public rawName: string = "";
+
+    /**
+     * the trimmed and lowercase string of mark
+     * @type {string}
+     */
     public tName: string = "";
 
     constructor(
@@ -131,8 +139,8 @@ export class TNode extends TSegHolder {
         public readonly tSeg: TSeg = new TSeg(),
     ) {
         super(tSeg);
-        this.rawName = name.trim().toLowerCase();
-        this.tName = getTypeNameByAlias(this.rawName);
+        this.rawName = name.trim();
+        this.tName = getTypeNameByAlias(this.rawName.toLowerCase());
     }
 
     public toSchemaStr() {

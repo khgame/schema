@@ -8,7 +8,8 @@
     "lint:fix": "npx tslint --fix --project .",
     "build": "rimraf ./lib && npx tsc",
     "prepublishOnly": "npm run test && npm run build",
-    "ex:zero-in-arr": "ts-node ./example/zeroInArr"
+    "ex:zero-in-arr": "ts-node ./example/zeroInArr",
+    "ex:enum": "ts-node ./example/enum"
   },
   "repository": {
     "type": "git",

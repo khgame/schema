@@ -88,7 +88,7 @@ export class EnumConvertor extends Convertor {
 
     public validate(v: any): ConvertResult {
         for (const i in this.enumNames) {
-            const ret = [("" + v).trim().toLowerCase() === this.enumNames[i], this.enumNames[i]] as ConvertResult;
+            const ret = [("" + v).trim().toLowerCase() === this.enumNames[i].toLowerCase(), this.enumNames[i]] as ConvertResult;
             if (ret[0]) {
                 return ret;
             }
