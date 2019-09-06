@@ -111,15 +111,23 @@ export class TNode extends TSegHolder {
         const leftAngle = strTNode.indexOf("<");
         const rightAngle = strTNode[strTNode.length - 1] === ">" ? strTNode.length - 1 : -1;
         if (leftAngle >= 0 && rightAngle >= 0) {
-            return new TNode(
-                getTypeNameByAlias(strTNode.substr(0, leftAngle).trim()),
+            return TNode.create(
+                strTNode.substr(0, leftAngle).trim(),
                 TSeg.parse(strTNode.substr(leftAngle + 1, rightAngle - leftAngle - 1)),
             );
         } else if (leftAngle >= 0 || rightAngle >= 0) {
             throw new Error(`getTypeName error : angle not match ${strTNode} <(${leftAngle}) >(${rightAngle})`);
         }
-        return new TNode(getTypeNameByAlias(strTNode));
+        return TNode.create(strTNode);
     }
+
+    public static create(rawName: string, tSeg: TSeg = new TSeg()): TNode {
+        const ret = new TNode(getTypeNameByAlias(rawName), tSeg);
+        ret.rawName = rawName;
+        return ret;
+    }
+
+    public rawName: string = "";
 
     constructor(
         public readonly tName: string,
@@ -176,7 +184,7 @@ export class TDM extends TSegHolder {
             mds: this.mds.length > 0 ? this.mds : undefined,
             ind: this.markInd,
             tName: this.innerCount === 1 ? this.inner(0).toSchemaJson() : undefined,
-            types: this.innerCount > 1 ? this.tSeg.nodes.map((m) => m.toSchemaJson()): undefined,
+            types: this.innerCount > 1 ? this.tSeg.nodes.map((m) => m.toSchemaJson()) : undefined,
         };
     }
 }

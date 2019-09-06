@@ -5,7 +5,7 @@ import {Convertor, ConvertResult} from "./base";
 import {getPlainConvertor} from "./plainConvertor";
 
 function isTemplateNode(tNode: TNode) {
-    return tNode.tName === SupportedTypes.Pair || tNode.tName === SupportedTypes.Array;
+    return tNode.tName === SupportedTypes.Pair || tNode.tName === SupportedTypes.Array || tNode.tName === SupportedTypes.Enum ;
 }
 
 export class TemplateConvertor extends Convertor {
@@ -48,7 +48,6 @@ export class TemplateConvertor extends Convertor {
             const pre = this.useConvertor.validate(kv.val);
             kv.val = pre[1];
             return [pre[0], kv];
-
         }
         return [false, undefined];
     }

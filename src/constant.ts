@@ -10,6 +10,7 @@ export const SupportedTypes = {
     Any: "any", // not recommend
     Pair: "pair", // not recommend
     Array: "array", // not recommend
+    Enum: "enum",
 };
 
 export const AliasTable = {
@@ -23,6 +24,7 @@ export const AliasTable = {
     [SupportedTypes.Any]: [SupportedTypes.Any, "dynamic", "object", "obj", "any"],
     [SupportedTypes.Pair]: [SupportedTypes.Pair],
     [SupportedTypes.Array]: [SupportedTypes.Array],
+    [SupportedTypes.Enum]: [SupportedTypes.Enum],
 };
 
 export const TrueType = ["true", "t", "yes", "y", "on", "ok"];
