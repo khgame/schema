@@ -1,6 +1,6 @@
+import * as _ from "lodash";
 import {AliasTable, SupportedTypes} from "../constant";
 import {MarkType, parseMD} from "./utils";
-import * as _ from "lodash";
 
 function reverseAlias() {
     const ret: { [typeStr: string]: string } = {};
@@ -13,7 +13,7 @@ function reverseAlias() {
 }
 
 export interface IContext {
-    enums?: { [enumName: string]: { [key: string]: string | number } };
+    enums?: { [enumName: string]: { [key: string]: string | number | Array<string | number> } };
 }
 
 export const reverseAliasTable = reverseAlias();

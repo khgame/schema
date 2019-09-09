@@ -85,10 +85,10 @@ export class EnumConvertor extends Convertor {
         super();
         // console.log("rawName", tNode.rawName);
         tNode.tSeg.nodes.forEach((tNode) => {
-            let enumTable;
+            let enumTable: { [key: string]: string | number | Array<string | number> };
             if (tNode.context && tNode.context.enums && (enumTable = tNode.context.enums[tNode.rawName])) {
                 for (const key in enumTable) {
-                    this.enumNames[key] = enumTable[key];
+                    this.enumNames[key] = _.isArray(enumTable[key]) ? (enumTable[key] as Array<string | number>)[0] : enumTable[key] ;
                 }
             } else {
                 this.enumNames[tNode.rawName] = tNode.rawName;
