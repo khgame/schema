@@ -99,6 +99,7 @@ export class EnumConvertor extends Convertor {
 
     public validate(v: any): ConvertResult {
         for (const key in this.enumNames) {
+            /** will try to match value first */
             const meet = (v === this.enumNames[key]) || (("" + v).trim().toLowerCase() === key.toLowerCase());
             if (meet) {
                 return [true, this.enumNames[key]];
