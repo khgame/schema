@@ -124,7 +124,8 @@ describe("Plain Convertor Validate Test", () => {
 
         it(SupportedTypes.None, () => {
             const convertor = getPlainConvertor(SupportedTypes.None);
-            expect(convertor).to.equal(undefined);
+            expect(convertor).to.not.equal(undefined);
+            expect(convertor.typeName).to.equal(SupportedTypes.None);
         });
 
         it(SupportedTypes.Array, () => {

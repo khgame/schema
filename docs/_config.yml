@@ -1,0 +1,76 @@
+# Site settings
+title: "Schema Framework"
+description: "游戏开发中的类型安全数值配置解决方案"
+baseurl: ""
+url: "https://khgame.github.io/schema"
+
+# Language
+lang: zh-CN
+
+# Theme
+theme: just-the-docs
+color_scheme: light
+
+# GitHub
+repository: khgame/schema
+edit_on_github: true
+github_branch: main
+
+# Navigation
+nav_external_links:
+  - title: GitHub
+    url: https://github.com/khgame/schema
+    hide_icon: false
+  - title: Discord 社区
+    url: https://discord.gg/schema-gaming
+    hide_icon: false
+
+# Footer
+footer_content: "Copyright &copy; 2024 Schema Framework. 基于 MIT 许可证分发。"
+
+# Aux links
+aux_links:
+  "GitHub":
+    - "https://github.com/khgame/schema"
+  "Discord":
+    - "https://discord.gg/schema-gaming"
+
+# Search
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 2
+  preview_words_before: 3
+  preview_words_after: 3
+  tokenizer_separator: /[\s/]+/
+  rel_url: true
+  button: false
+
+# Heading anchor links
+heading_anchors: true
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "回到顶部"
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+sass:
+  style: compressed
+
+# Exclude from processing
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/ 

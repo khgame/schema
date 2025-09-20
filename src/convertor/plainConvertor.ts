@@ -88,3 +88,8 @@ export const anyConvertor = new PlainConvertor(
     SupportedTypes.Any,
     (cellValue) => [true, cellValue],
 );
+
+export const noneConvertor = new PlainConvertor(
+    SupportedTypes.None,
+    (cellValue) => [true, cellValue],
+);
