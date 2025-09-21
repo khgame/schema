@@ -166,11 +166,11 @@ const StageSchema = Schema.define({
 });
 ```
 
-## 💡 核心特性展示
+## 核心能力速览
 
 <div class="callout">
-<strong>🔥 热门特性</strong><br>
-Schema 框架已被多个知名游戏项目采用，包括 MMORPG、卡牌游戏、策略游戏等不同类型。
+<strong>使用提示</strong><br>
+以下示例基于内部实践总结，可按需裁剪到自己的项目流程。
 </div>
 
 ### 数据验证和错误处理
@@ -198,12 +198,45 @@ try {
 // 从 CSV 批量导入角色数据
 const characters = await CharacterSchema.fromCSV('./characters.csv');
 
-// 转换为游戏引擎需要的格式
-const unityFormat = CharacterSchema.convertTo('unity', characters);
+// 转换为内部数据结构
+const normalized = CharacterSchema.convertTo('runtime', characters);
 
 // 导出为策划表格
-await CharacterSchema.toExcel(characters, './output/characters.xlsx');
+await CharacterSchema.toExcel(normalized, './output/characters.xlsx');
 ```
+
+## 二维表配合实践
+
+Schema 标记与二维表（CSV / Excel）列是一一对应的。常见做法：
+
+1. **同步列描述**：在策划表的首行维护列名数组 `descList`，保持顺序与 `parseSchema` 中的标记一致。
+2. **读取原始表格**：按行读取 CSV/Excel，将每行转换为简单数组 `values: any[]`，下标与列位置相同。
+3. **验证与转换**：调用 `const result = new SchemaConvertor(schema).convert(values)`，读取 `result.ok` 判断是否通过；若失败，`result.errors` 给出列路径与原始值。
+4. **导出结构对象**：使用 `exportJson(schema, descList, rows)` 将验证通过的数据重建为嵌套对象/数组。
+
+示例表格：
+
+```
+id,name,level,stats.hp,stats.attack
+1,Hero,10,100,25
+2,Mage,12,80,30
+```
+
+对应的 schema 标记：
+
+```ts
+const schemaMarks = [
+  'uint',
+  'string',
+  'uint',
+  'stats', '{',
+    'uint', // hp
+    'uint', // attack
+  '}'
+];
+```
+
+只要列顺序保持一致，就能在一次转换里完成校验、结构化和错误定位。若列发生调整，只需同步更新首行描述与标记顺序即可。
 
 ### 配置热更新支持
 
