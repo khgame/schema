@@ -3,6 +3,8 @@ import "mocha";
 
 import {Error} from "tslint/lib/error";
 import {AliasTable, SupportedTypes} from "../../src";
+import {SchemaConvertor} from "../../src/convertor";
+import {parseSchema} from "../../src/schema";
 import {TDM} from "../../src/schema/typeDescriptionMark";
 
 describe("parse simple schema", () => {
@@ -191,6 +193,17 @@ describe("parse simple schema", () => {
             expect(tdmObject.inner(0).tName).to.equal(SupportedTypes.Int);
             expect(tdmObject.mds.length).to.equal(1);
             expect(tdmObject.mds[0]).to.equal("$strict");
+        });
+    });
+
+    describe("parseSchema overload", () => {
+        it("accepts context as second argument", () => {
+            const context = { enums: { Status: { ACTIVE: 1 } } };
+            const schema = parseSchema(["enum<Status>"], context);
+            const convertor = new SchemaConvertor(schema);
+            const result = convertor.convert(["ACTIVE"]);
+            expect(result.ok).to.be.true;
+            expect(result.value?.[0].value).to.equal(1);
         });
     });
 });

@@ -1,9 +1,4 @@
-import {
-    MarkConvertorResultToErrorStack,
-    SchemaConvertor,
-    SDMConvertor,
-    TDMConvertor,
-} from "../src/convertor/schemaConvertor";
+import {SchemaConvertor, SDMConvertor, TDMConvertor} from "../src/convertor/schemaConvertor";
 import {IMark, parseSchema, SDM, TDM} from "../src/schema";
 
 function printMark(mark: IMark, name = "") {
@@ -69,7 +64,6 @@ printMark(mark5, "mark5");
 const conv5 = new SDMConvertor(mark5);
 const validate5 = conv5.validate(["222", undefined, undefined, undefined, undefined, undefined, "ok:9", undefined, undefined, "on"]);
 console.log(JSON.stringify(validate5));
-console.log("Error Stack :\n", JSON.stringify(MarkConvertorResultToErrorStack(validate5)));
 const mark5g = parseSchema(["str", "[", "$ghost {", "uint", "}", "{", "Pair<int?>?", "}", "]", "onoff"]);
 
 printMark(mark5g, "mark5g");

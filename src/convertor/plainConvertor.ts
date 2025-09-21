@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import {SupportedTypes, TrueType} from "../constant";
-import {Convertor} from "./baseConvertor";
+import {ConvertOptions, Convertor, ConvertResult} from "./baseConvertor";
 
 const plainConvertors: { [typeStr: string]: PlainConvertor } = {};
 
@@ -13,83 +13,113 @@ export function getPlainConvertor(typeStr: string) {
 }
 
 export class PlainConvertor extends Convertor {
-    constructor(public readonly typeName: string, public validate: (v: any) => [boolean, any]) {
+    constructor(public readonly typeName: string, private readonly validator: (this: PlainConvertor, v: any, options?: ConvertOptions) => ConvertResult) {
         super();
         plainConvertors[typeName] = this;
     }
+
+    public validate(v: any, options: ConvertOptions = {}): ConvertResult {
+        return this.validator.call(this, v, options);
+    }
+}
+
+function failByType(this: PlainConvertor, raw: any, message: string, options?: ConvertOptions) {
+    return this.fail(message, { raw, path: options?.path });
 }
 
 export const strConvertor = new PlainConvertor(
     SupportedTypes.String,
-    (cellValue) => [cellValue !== null && cellValue !== undefined, _.toString(cellValue)]); // 不允许空串
+    function(cellValue, options) {
+        if (cellValue === null || cellValue === undefined) {
+            return failByType.call(this, cellValue, "string required", options);
+        }
+        return this.ok(_.toString(cellValue));
+    });
 
 export const undefinedConvertor = new PlainConvertor(
     SupportedTypes.Undefined,
-    (cellValue) => [cellValue === null || cellValue === undefined || (typeof cellValue === "string" && cellValue.trim() === ""), undefined]);
+    function(cellValue, options) {
+        const allowed = cellValue === null || cellValue === undefined || (typeof cellValue === "string" && cellValue.trim() === "");
+        return allowed ? this.ok(undefined) : failByType.call(this, cellValue, "must be empty or undefined", options);
+    });
 
 export const floatConvertor = new PlainConvertor(
     SupportedTypes.Float,
-    (cellValue) => {
+    function(cellValue, options) {
         if (isEmpty(cellValue)) {
-            return [false, cellValue];
+            return failByType.call(this, cellValue, "number required", options);
         }
         const ret = _.toNumber(format(cellValue));
-        if (_.isNaN(ret)) { // its not empty, and parsed as NAN
-            throw new Error(`ERROR!! : NAN detected => ${cellValue}`);
+        if (_.isNaN(ret)) {
+            return this.fail("invalid number", { raw: cellValue, path: options?.path });
         }
-        return [undefined !== ret && !_.isNaN(ret), ret];
+        return this.ok(ret);
     });
 
 export const ufloatConvertor = new PlainConvertor(
     SupportedTypes.UFloat,
-    (cellValue) => {
-        const pre = floatConvertor.validate(cellValue);
-        pre[0] = pre[0] && pre[1] >= 0;
+    function(cellValue, options) {
+        const pre = floatConvertor.validate(cellValue, options);
+        if (!pre.ok) {
+            return pre;
+        }
+        if ((pre.value as number) < 0) {
+            return this.fail("must be >= 0", { raw: cellValue, path: options?.path });
+        }
         return pre;
     });
 
 export const intConvertor = new PlainConvertor(
     SupportedTypes.Int,
-    (cellValue) => {
-        const pre = floatConvertor.validate(cellValue);
-        const intValue = Math.round(pre[1]);
-        pre[0] = pre[0] && Math.abs(intValue - pre[1]) < 0.0000000000001;
-        if (pre[0]) {
-            pre[1] = intValue;
+    function(cellValue, options) {
+        const pre = floatConvertor.validate(cellValue, options);
+        if (!pre.ok) {
+            return pre;
         }
-        return pre;
+        const intValue = Math.round(pre.value as number);
+        if (Math.abs(intValue - (pre.value as number)) >= 0.0000000000001) {
+            return this.fail("must be integer", { raw: cellValue, path: options?.path });
+        }
+        return this.ok(intValue);
     });
 
 export const uintConvertor = new PlainConvertor(
     SupportedTypes.UInt,
-    (cellValue) => {
-        const pre = ufloatConvertor.validate(cellValue);
-        const intValue = Math.round(pre[1]);
-        pre[0] = pre[0] && Math.abs(intValue - pre[1]) < 0.0000000000001;
-        if (pre[0]) {
-            pre[1] = intValue;
+    function(cellValue, options) {
+        const pre = intConvertor.validate(cellValue, options);
+        if (!pre.ok) {
+            return pre;
+        }
+        if ((pre.value as number) < 0) {
+            return this.fail("must be unsigned integer", { raw: cellValue, path: options?.path });
         }
         return pre;
     });
 
 export const boolConvertor = new PlainConvertor(
     SupportedTypes.Boolean,
-    (cellValue) => {
+    function(cellValue, options) {
         const ret = format(cellValue);
-        return [
-            _.isBoolean(ret) || _.isNumber(ret) || _.isString(ret),
-            ret === true ||
+        const acceptable = _.isBoolean(ret) || _.isNumber(ret) || _.isString(ret);
+        if (!acceptable) {
+            return this.fail("boolean required", { raw: cellValue, path: options?.path });
+        }
+        const value = ret === true ||
             (_.isNumber(ret) && ret > 0) ||
-            (_.isString(ret) && TrueType.indexOf(ret) >= 0),
-        ];
+            (_.isString(ret) && TrueType.indexOf(ret) >= 0);
+        return this.ok(value);
     });
 
 export const anyConvertor = new PlainConvertor(
     SupportedTypes.Any,
-    (cellValue) => [true, cellValue],
+    function(cellValue, _options) {
+        return this.ok(cellValue);
+    },
 );
 
 export const noneConvertor = new PlainConvertor(
     SupportedTypes.None,
-    (cellValue) => [true, cellValue],
+    function(cellValue, _options) {
+        return this.ok(cellValue);
+    },
 );

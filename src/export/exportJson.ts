@@ -1,5 +1,4 @@
-import * as _ from "lodash";
-import {ISDMConvertResult, MarkConvertorResultToErrorStack, SchemaConvertor} from "../convertor";
+import {ConvertError, ISDMConvertResult, SchemaConvertor} from "../convertor";
 import {MarkType, SDM, SDMType} from "../schema";
 
 interface IMarkDesc {
@@ -18,14 +17,6 @@ export function exportJson(schema: SDM, descList: Array<string|undefined|null>, 
 
     function RowOfMInd(lineInd: number) {
         return markDescriptor.row ? markDescriptor.row[lineInd] : `ROW:${lineInd}`;
-    }
-
-    function replaceErrorStack(errStack: any) {
-        const ret: any = {};
-        Object.keys(errStack).forEach((markInd) => {
-            ret[ColOfMInd(Number(markInd))] = _.isObject(errStack[markInd]) ? replaceErrorStack(errStack[markInd]) : errStack[markInd];
-        });
-        return ret;
     }
 
     function createObject(converted: ISDMConvertResult, sdm: SDM): any[] | any { // the node is sdm
@@ -50,42 +41,80 @@ export function exportJson(schema: SDM, descList: Array<string|undefined|null>, 
         for (const childInd in sdm.marks) {
             const child = sdm.marks[childInd];
             const markInd = child.markInd;
-            const value = converted[markInd] ? converted[markInd][1] : undefined;
+            const nodeResult = converted[markInd];
+            const value = nodeResult ? nodeResult.value : undefined;
 
             // const child = sdm.marks.find(v => v.markInd === markInd)
             if (child.markType === MarkType.TDM || value === undefined) {
                 // console.log(child.markInd, value); // , child)
                 setValue(markInd, value);
             } else {
-                setValue(markInd - 1, createObject(value, child as SDM));
+                setValue(markInd - 1, createObject(value as ISDMConvertResult, child as SDM));
             }
         }
         // console.log("create", retArr, retObj);
         return sdm.sdmType === SDMType.Arr ? retArr : retObj;
     }
 
+    function assignError(target: any, path: Array<string | number>, message: string) {
+        let node = target;
+        let columnResolved = false;
+        path.forEach((step, index) => {
+            let key: string | number = step;
+            if (typeof step === "number") {
+                if (!columnResolved) {
+                    key = ColOfMInd(step);
+                    columnResolved = true;
+                } else {
+                    key = `[${step}]`;
+                }
+            }
+            if (index === path.length - 1) {
+                if (node[key]) {
+                    if (Array.isArray(node[key])) {
+                        node[key].push(message);
+                    } else {
+                        node[key] = [node[key], message];
+                    }
+                } else {
+                    node[key] = message;
+                }
+            } else {
+                if (!node[key] || typeof node[key] !== "object") {
+                    node[key] = {};
+                }
+                node = node[key];
+            }
+        });
+    }
+
+    function buildErrorStack(errors: ConvertError[]) {
+        const stack: any = {};
+        errors.forEach((error) => {
+            const path = error.path && error.path.length > 0 ? error.path : ["__UNKNOWN__"];
+            assignError(stack, path, error.message || "conversion failed");
+        });
+        return stack;
+    }
+
     const result: any[] = [];
-    const tids = [];
     for (const lineInd in convertedRows) {
         const values = convertedRows[lineInd];
         // console.log("-- values ", lineInd, ":\n", JSON.stringify(values));
-        const validate = convertor.validate(values);
+        const validation = convertor.validate(values, { path: [] });
 
-        if (!validate[0]) {
-            const errorStack = MarkConvertorResultToErrorStack(validate);
-
+        if (!validation.ok) {
+            const errorStack = buildErrorStack(validation.errors);
             console.warn(`error: parse row failed; row - ${RowOfMInd(Number(lineInd))}`);
             // console.log("values", values);
-            console.log("stack\n", JSON.stringify(replaceErrorStack(errorStack), null, 2));
+            console.log("stack\n", JSON.stringify(errorStack, null, 2));
             continue;
         }
-        const converted = convertor.convert(values);
-        // console.log('--- converted:\n', JSON.stringify(converted), '\n===')
-        if (!converted) {
+        if (!validation.value) {
             console.log(``);
         } else {
             // console.log("createObject =[ ", lineInd, JSON.stringify(converted))
-            result[lineInd] = createObject(converted, schema);
+            result[lineInd] = createObject(validation.value, schema);
         }
     }
     return result;
