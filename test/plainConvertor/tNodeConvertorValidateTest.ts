@@ -16,11 +16,14 @@ describe("TNode Convertor", () => {
         const convertor = new TNodeConvertor(node);
 
         it("converts strings to integers", () => {
-            expect(convertor.convert("42")).to.equal(42);
+            const result = convertor.convert("42");
+            expect(result.ok).to.be.true;
+            expect(result.value).to.equal(42);
         });
 
         it("fails fast on incompatible input", () => {
-            expect(() => convertor.convert("not-a-number")).to.throw();
+            expect(convertor.convert("not-a-number").ok).to.be.false;
+            expect(() => convertor.convert("not-a-number", { failFast: true })).to.throw(TypeError);
         });
     });
 
@@ -29,14 +32,18 @@ describe("TNode Convertor", () => {
             const node = parseSingleNode(`${SupportedTypes.Array}<uint>`);
             const convertor = new TNodeConvertor(node);
 
-            expect(convertor.convert("1|2|3")).to.deep.equal([1, 2, 3]);
+            const result = convertor.convert("1|2|3");
+            expect(result.ok).to.be.true;
+            expect(result.value).to.deep.equal([1, 2, 3]);
         });
 
         it("parses pair templates into key/value records", () => {
             const node = parseSingleNode(`${SupportedTypes.Pair}<string>`);
             const convertor = new TNodeConvertor(node);
 
-            expect(convertor.convert("name:Hero")).to.deep.equal({key: "name", val: "Hero"});
+            const result = convertor.convert("name:Hero");
+            expect(result.ok).to.be.true;
+            expect(result.value).to.deep.equal({key: "name", val: "Hero"});
         });
     });
 
@@ -53,12 +60,12 @@ describe("TNode Convertor", () => {
         const convertor = new TNodeConvertor(node);
 
         it("matches enum keys case-insensitively", () => {
-            expect(convertor.convert("fire")).to.equal(1);
-            expect(convertor.convert("WATER")).to.equal(2);
+            expect(convertor.convert("fire").value).to.equal(1);
+            expect(convertor.convert("WATER").value).to.equal(2);
         });
 
         it("rejects values outside the enum table", () => {
-            expect(() => convertor.convert("earth")).to.throw();
+            expect(convertor.convert("earth").ok).to.be.false;
         });
     });
 
@@ -67,11 +74,11 @@ describe("TNode Convertor", () => {
         const convertor = new TNodeConvertor(node);
 
         it("prefers the first branch when it succeeds", () => {
-            expect(convertor.convert("12")).to.equal(12);
+            expect(convertor.convert("12").value).to.equal(12);
         });
 
         it("propagates errors from non-matching branches", () => {
-            expect(() => convertor.convert("text")).to.throw();
+            expect(convertor.convert("text").ok).to.be.false;
         });
     });
 

@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import {SupportedTypes} from "../constant";
 import {TNode, TSeg} from "../schema";
-import {Convertor, ConvertResult} from "./baseConvertor";
+import {ConvertError, ConvertOptions, Convertor, ConvertResult} from "./baseConvertor";
 import {getPlainConvertor} from "./plainConvertor";
 
 export class TemplateConvertor extends Convertor {
@@ -23,33 +23,42 @@ export class TemplateConvertor extends Convertor {
         }
     }
 
-    public validate(v: any): ConvertResult {
+    public validate(v: any, options: ConvertOptions = {}): ConvertResult {
+        const basePath = options.path || [];
         if (this.tNode.tName === SupportedTypes.Array) {
             const items = !v ? [] : ((!_.isString(v) || v.indexOf("|") < 0) ? [v] : v.split("|").map((s) => s.trim()));
-            return items.map((item) => this.useConvertor.validate(item)).reduce((prev, item) => {
-                prev[0] = prev[0] && item[0];
-                prev[1].push(item[1]);
-                return prev;
-            }, [true, []]);
+            const childResults = items.map((item, index) => {
+                const childPath = [...basePath, index];
+                return this.useConvertor.validate(item, { ...options, path: childPath });
+            });
+            const merged = this.merge(childResults);
+            if (merged.ok) {
+                return this.ok(merged.value);
+            }
+            return merged;
         } else if (this.tNode.tName === SupportedTypes.Pair) {
             if (!_.isString(v)) {
-                return [false, v];
-                // throw TypeError(`must be string value ${v} of pair that match the schema 'key:val'`);
+                return this.fail("pair requires string input", { raw: v, path: basePath });
             }
             if (v.indexOf(":") < 0) {
-                return [false, v];
-                // throw TypeError(`must be ${v} of pair that match the schema 'key:val'`);
+                return this.fail("pair value must contain ':'", { raw: v, path: basePath });
             }
             const split = v.split(":").map((s) => s.trim());
             const kv = {
                 key: split[0],
                 val: split[1],
             };
-            const pre = this.useConvertor.validate(kv.val);
-            kv.val = pre[1];
-            return [pre[0], kv];
+            const pre = this.useConvertor.validate(kv.val, { ...options, path: [...basePath, "val"] });
+            if (!pre.ok) {
+                return {
+                    ok: false,
+                    errors: pre.errors,
+                };
+            }
+            kv.val = pre.value;
+            return this.ok(kv);
         }
-        return [false, undefined];
+        return this.fail("unsupported template", { raw: v, path: basePath });
     }
 }
 
@@ -62,14 +71,16 @@ export class RichConvertor extends Convertor {
         this.convertors = tSeg.nodes.map((tNode) => new TNodeConvertor(tNode));
     }
 
-    public validate(v: any): ConvertResult {
-        for (const i in this.convertors) {
-            const ret = this.convertors[i].validate(v);
-            if (ret[0]) {
+    public validate(v: any, options: ConvertOptions = {}): ConvertResult {
+        const errors: ConvertError[] = [];
+        for (const convertor of this.convertors) {
+            const ret = convertor.validate(v, options);
+            if (ret.ok) {
                 return ret;
             }
+            errors.push(...ret.errors);
         }
-        return [false, undefined];
+        return { ok: false, errors: errors.length > 0 ? errors : [{ message: "no union branch matched", raw: v, path: options.path }] };
     }
 }
 
@@ -97,15 +108,15 @@ export class EnumConvertor extends Convertor {
         // console.log("enumNames", this.enumNames);
     }
 
-    public validate(v: any): ConvertResult {
+    public validate(v: any, options: ConvertOptions = {}): ConvertResult {
         for (const key in this.enumNames) {
             /** will try to match value first */
             const meet = (v === this.enumNames[key]) || (("" + v).trim().toLowerCase() === key.toLowerCase());
             if (meet) {
-                return [true, this.enumNames[key]];
+                return this.ok(this.enumNames[key]);
             }
         }
-        return [false, v];
+        return this.fail("enum value not found", { raw: v, path: options.path });
     }
 }
 
@@ -129,7 +140,7 @@ export class TNodeConvertor extends Convertor {
         }
     }
 
-    public validate(v: any) {
-        return this.useConvertor.validate(v);
+    public validate(v: any, options: ConvertOptions = {}): ConvertResult {
+        return this.useConvertor.validate(v, options);
     }
 }

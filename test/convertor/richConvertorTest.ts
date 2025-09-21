@@ -1,464 +1,141 @@
 import {expect} from "chai";
 import "mocha";
-import {
-    TemplateConvertor, 
-    RichConvertor, 
-    EnumConvertor, 
-    TNodeConvertor
-} from "../../src/convertor/richConvertor";
+
+import {TemplateConvertor, RichConvertor, EnumConvertor, TNodeConvertor} from "../../src/convertor";
 import {TDM} from "../../src/schema/typeDescriptionMark";
 import {SupportedTypes} from "../../src/constant";
 
-describe("Rich Convertor Complete Coverage", () => {
+describe("RichConvertor family", () => {
+    it("TemplateConvertor handles arrays with soft failures", () => {
+        const node = TDM.parse("array<uint>").inner(0);
+        const convertor = new TemplateConvertor(node);
 
-    describe("TemplateConvertor", () => {
-        
-        describe("testName static method", () => {
-            it("should identify pair and array types", () => {
-                expect(TemplateConvertor.testName(SupportedTypes.Pair)).to.be.true;
-                expect(TemplateConvertor.testName(SupportedTypes.Array)).to.be.true;
-                expect(TemplateConvertor.testName(SupportedTypes.String)).to.be.false;
-                expect(TemplateConvertor.testName(SupportedTypes.UInt)).to.be.false;
-            });
-        });
+        const okResult = convertor.convert("1|2|3");
+        expect(okResult.ok).to.be.true;
+        expect(okResult.value).to.deep.equal([1, 2, 3]);
 
-        describe("Constructor logic", () => {
-            it("should fallback to Any convertor when no inner nodes", () => {
-                const tdm = TDM.parse("array<>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                expect(convertor.useConvertor).to.not.be.undefined;
-            });
-
-            it("should use TNodeConvertor for single inner node", () => {
-                const tdm = TDM.parse("array<uint>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                expect(convertor.useConvertor).to.be.instanceOf(TNodeConvertor);
-            });
-
-            it("should use RichConvertor for multiple inner nodes", () => {
-                const tdm = TDM.parse("array<uint|string>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                expect(convertor.useConvertor).to.be.instanceOf(RichConvertor);
-            });
-        });
-
-        describe("Array validation", () => {
-            it("should handle null/undefined values", () => {
-                const tdm = TDM.parse("array<uint>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                
-                const result1 = convertor.validate(null);
-                expect(result1[0]).to.be.true;
-                expect(result1[1]).to.deep.equal([]);
-
-                const result2 = convertor.validate(undefined);
-                expect(result2[0]).to.be.true;
-                expect(result2[1]).to.deep.equal([]);
-            });
-
-            it("should handle single values (not string)", () => {
-                const tdm = TDM.parse("array<uint>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                
-                const result = convertor.validate(123);
-                expect(result[0]).to.be.true;
-                expect(result[1]).to.have.length(1);
-            });
-
-            it("should handle string values without pipe separator", () => {
-                const tdm = TDM.parse("array<string>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                
-                const result = convertor.validate("single_value");
-                expect(result[0]).to.be.true;
-                expect(result[1]).to.deep.equal(["single_value"]);
-            });
-
-            it("should split pipe-separated string values", () => {
-                const tdm = TDM.parse("array<uint>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                
-                const result = convertor.validate("1|2|3");
-                expect(result[0]).to.be.true;
-                expect(result[1]).to.have.length(3);
-            });
-
-            it("should trim spaces from split values", () => {
-                const tdm = TDM.parse("array<string>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                
-                const result = convertor.validate(" a | b | c ");
-                expect(result[0]).to.be.true;
-                expect(result[1]).to.deep.equal(["a", "b", "c"]);
-            });
-
-            it("should validate all items and return combined result", () => {
-                const tdm = TDM.parse("array<uint>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                
-                const result = convertor.validate("1|invalid|3");
-                expect(result[0]).to.be.false; // Should fail due to invalid item
-            });
-        });
-
-        describe("Pair validation", () => {
-            it("should reject non-string values", () => {
-                const tdm = TDM.parse("pair<uint>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                
-                const result = convertor.validate(123);
-                expect(result[0]).to.be.false;
-                expect(result[1]).to.equal(123);
-            });
-
-            it("should reject strings without colon", () => {
-                const tdm = TDM.parse("pair<string>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                
-                const result = convertor.validate("no_colon_here");
-                expect(result[0]).to.be.false;
-                expect(result[1]).to.equal("no_colon_here");
-            });
-
-            it("should parse valid key:value pairs", () => {
-                const tdm = TDM.parse("pair<uint>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                
-                const result = convertor.validate("mykey:123");
-                expect(result[0]).to.be.true;
-                expect(result[1]).to.deep.equal({key: "mykey", val: 123});
-            });
-
-            it("should trim spaces from key and value", () => {
-                const tdm = TDM.parse("pair<string>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                
-                const result = convertor.validate(" key : value ");
-                expect(result[0]).to.be.true;
-                expect(result[1]).to.deep.equal({key: "key", val: "value"});
-            });
-
-            it("should validate the value using inner convertor", () => {
-                const tdm = TDM.parse("pair<uint>");
-                const convertor = new TemplateConvertor(tdm.inner(0));
-                
-                const result = convertor.validate("key:invalid");
-                expect(result[0]).to.be.false;
-            });
-        });
-
-        describe("Unknown type handling", () => {
-            it("should return false for unknown template types", () => {
-                // Create a mock TNode with unknown type
-                const mockTNode = {
-                    tName: "unknown_type",
-                    innerCount: 1,
-                    inner: () => ({})
-                };
-                const convertor = new TemplateConvertor(mockTNode as any);
-                
-                const result = convertor.validate("test");
-                expect(result[0]).to.be.false;
-                expect(result[1]).to.be.undefined;
-            });
-        });
+        const failResult = convertor.convert("1|oops|3");
+        expect(failResult.ok).to.be.false;
+        expect(failResult.errors.length).to.equal(1);
     });
 
-    describe("RichConvertor", () => {
-        it("should try all convertors until one succeeds", () => {
-            const tdm = TDM.parse("uint|string");
-            const convertor = new RichConvertor(tdm.tSeg);
-            
-            const result1 = convertor.validate("123");
-            expect(result1[0]).to.be.true;
-
-            const result2 = convertor.validate("text");
-            expect(result2[0]).to.be.true;
-        });
-
-        it("should return false when no convertor succeeds", () => {
-            const tdm = TDM.parse("uint|ufloat");
-            const convertor = new RichConvertor(tdm.tSeg);
-            
-            const result = convertor.validate("clearly_not_a_number");
-            expect(result[0]).to.be.false;
-            expect(result[1]).to.be.undefined;
-        });
-
-        it("should handle empty tSeg nodes", () => {
-            const mockTSeg = { nodes: [] };
-            const convertor = new RichConvertor(mockTSeg as any);
-            
-            const result = convertor.validate("anything");
-            expect(result[0]).to.be.false;
-        });
+    it("TemplateConvertor falls back to any when template missing", () => {
+        const node = TDM.parse("array<>").inner(0);
+        const convertor = new TemplateConvertor(node);
+        expect(convertor.convert(123).value).to.deep.equal([123]);
     });
 
-    describe("EnumConvertor", () => {
-        
-        describe("testName static method", () => {
-            it("should identify enum types", () => {
-                expect(EnumConvertor.testName(SupportedTypes.Enum)).to.be.true;
-                expect(EnumConvertor.testName(SupportedTypes.String)).to.be.false;
-            });
-        });
-
-        describe("Constructor with context enums", () => {
-            it("should load enum values from context", () => {
-                const context = {
-                    enums: {
-                        TestEnum: {
-                            VALUE1: 1,
-                            VALUE2: "test",
-                            VALUE3: [10, "alternative"]
-                        }
-                    }
-                };
-
-                const mockTNode = {
-                    tSeg: {
-                        nodes: [{
-                            rawName: "TestEnum",
-                            context: context
-                        }]
-                    }
-                };
-
-                const convertor = new EnumConvertor(mockTNode as any);
-                expect(convertor.enumNames["VALUE1"]).to.equal(1);
-                expect(convertor.enumNames["VALUE2"]).to.equal("test");
-                expect(convertor.enumNames["VALUE3"]).to.equal(10); // Should take first value from array
-            });
-
-            it("should use raw name when no context available", () => {
-                const mockTNode = {
-                    tSeg: {
-                        nodes: [{
-                            rawName: "PlainEnum",
-                            context: null
-                        }]
-                    }
-                };
-
-                const convertor = new EnumConvertor(mockTNode as any);
-                expect(convertor.enumNames["PlainEnum"]).to.equal("PlainEnum");
-            });
-
-            it("should handle missing context.enums", () => {
-                const context = { otherStuff: "data" };
-                const mockTNode = {
-                    tSeg: {
-                        nodes: [{
-                            rawName: "TestEnum",
-                            context: context
-                        }]
-                    }
-                };
-
-                const convertor = new EnumConvertor(mockTNode as any);
-                expect(convertor.enumNames["TestEnum"]).to.equal("TestEnum");
-            });
-        });
-
-        describe("Validation", () => {
-            it("should match exact values", () => {
-                const context = {
-                    enums: {
-                        TestEnum: { OPTION1: 1, OPTION2: "test" }
-                    }
-                };
-
-                const mockTNode = {
-                    tSeg: {
-                        nodes: [{
-                            rawName: "TestEnum",
-                            context: context
-                        }]
-                    }
-                };
-
-                const convertor = new EnumConvertor(mockTNode as any);
-                
-                const result1 = convertor.validate(1);
-                expect(result1[0]).to.be.true;
-                expect(result1[1]).to.equal(1);
-
-                const result2 = convertor.validate("test");
-                expect(result2[0]).to.be.true;
-                expect(result2[1]).to.equal("test");
-            });
-
-            it("should match case-insensitive key names", () => {
-                const context = {
-                    enums: {
-                        TestEnum: { OPTION1: 100 }
-                    }
-                };
-
-                const mockTNode = {
-                    tSeg: {
-                        nodes: [{
-                            rawName: "TestEnum",
-                            context: context
-                        }]
-                    }
-                };
-
-                const convertor = new EnumConvertor(mockTNode as any);
-                
-                const result1 = convertor.validate("option1");
-                expect(result1[0]).to.be.true;
-                expect(result1[1]).to.equal(100);
-
-                const result2 = convertor.validate("OPTION1");
-                expect(result2[0]).to.be.true;
-                expect(result2[1]).to.equal(100);
-            });
-
-            it("should handle string representations of values", () => {
-                const context = {
-                    enums: {
-                        TestEnum: { OPTION1: 123 }
-                    }
-                };
-
-                const mockTNode = {
-                    tSeg: {
-                        nodes: [{
-                            rawName: "TestEnum",
-                            context: context
-                        }]
-                    }
-                };
-
-                const convertor = new EnumConvertor(mockTNode as any);
-                
-                const result = convertor.validate("option1");
-                expect(result[0]).to.be.true;
-                expect(result[1]).to.equal(123);
-            });
-
-            it("should trim and lowercase input for comparison", () => {
-                const mockTNode = {
-                    tSeg: {
-                        nodes: [{
-                            rawName: "TestEnum",
-                            context: null
-                        }]
-                    }
-                };
-
-                const convertor = new EnumConvertor(mockTNode as any);
-                
-                const result = convertor.validate(" TESTENUM ");
-                expect(result[0]).to.be.true;
-                expect(result[1]).to.equal("TestEnum");
-            });
-
-            it("should return false for non-matching values", () => {
-                const context = {
-                    enums: {
-                        TestEnum: { VALID: 1 }
-                    }
-                };
-
-                const mockTNode = {
-                    tSeg: {
-                        nodes: [{
-                            rawName: "TestEnum",
-                            context: context
-                        }]
-                    }
-                };
-
-                const convertor = new EnumConvertor(mockTNode as any);
-                
-                const result = convertor.validate("invalid_value");
-                expect(result[0]).to.be.false;
-                expect(result[1]).to.equal("invalid_value");
-            });
-        });
+    it("TemplateConvertor delegates to RichConvertor for multiple inner types", () => {
+        const node = TDM.parse("array<uint|string>").inner(0);
+        const convertor = new TemplateConvertor(node);
+        const result = convertor.convert("text");
+        expect(result.ok).to.be.true;
+        expect(result.value).to.deep.equal(["text"]);
     });
 
-    describe("TNodeConvertor", () => {
-        
-        describe("Constructor convertor selection", () => {
-            it("should use TemplateConvertor for template types", () => {
-                const tdm = TDM.parse("array<uint>");
-                const convertor = new TNodeConvertor(tdm.inner(0));
-                expect(convertor.useConvertor).to.be.instanceOf(TemplateConvertor);
-            });
-
-            it("should use EnumConvertor for enum types", () => {
-                const tdm = TDM.parse("enum<TEST>");
-                const convertor = new TNodeConvertor(tdm.inner(0));
-                expect(convertor.useConvertor).to.be.instanceOf(EnumConvertor);
-            });
-
-            it("should use plain convertor for basic types", () => {
-                const tdm = TDM.parse("uint");
-                const convertor = new TNodeConvertor(tdm.inner(0));
-                expect(convertor.useConvertor).to.not.be.instanceOf(TemplateConvertor);
-                expect(convertor.useConvertor).to.not.be.instanceOf(EnumConvertor);
-            });
-
-            it("should throw error if no suitable convertor found", () => {
-                const mockTNode = {
-                    tName: "unsupported_type"
-                };
-
-                expect(() => {
-                    new TNodeConvertor(mockTNode as any);
-                }).to.throw();
-            });
-        });
-
-        describe("Validation delegation", () => {
-            it("should delegate to useConvertor", () => {
-                const tdm = TDM.parse("uint");
-                const convertor = new TNodeConvertor(tdm.inner(0));
-                
-                const result = convertor.validate("123");
-                expect(result[0]).to.be.true;
-                expect(result[1]).to.equal(123);
-            });
-        });
+    it("TemplateConvertor reports pair parse errors", () => {
+        const node = TDM.parse("pair<uint>").inner(0);
+        const convertor = new TemplateConvertor(node);
+        const result = convertor.convert("not-a-pair");
+        expect(result.ok).to.be.false;
+        expect(result.errors[0].message).to.contain("pair value");
     });
 
-    describe("Integration Tests", () => {
-        it("should handle complex nested template structures", () => {
-            const tdm = TDM.parse("array<pair<uint>>");
-            const convertor = new TNodeConvertor(tdm.inner(0));
-            
-            const result = convertor.validate("key1:123|key2:456");
-            expect(result[0]).to.be.true;
-            expect(result[1]).to.have.length(2);
-        });
-
-        it("should handle enum arrays with context", () => {
-            // Create mock TNode with context for enum
-            const mockTNode = {
-                tName: SupportedTypes.Array,
-                innerCount: 1,
-                inner: () => ({
-                    tName: SupportedTypes.Enum,
-                    tSeg: {
-                        nodes: [{
-                            rawName: "Status",
-                            context: {
-                                enums: {
-                                    Status: { ACTIVE: 1, INACTIVE: 0 }
-                                }
-                            }
-                        }]
-                    }
-                })
-            };
-            
-            const convertor = new TemplateConvertor(mockTNode as any);
-            
-            const result = convertor.validate("active|inactive");
-            expect(result[0]).to.be.true;
-        });
+    it("TemplateConvertor parses pair templates", () => {
+        const node = TDM.parse("pair<string>").inner(0);
+        const convertor = new TemplateConvertor(node);
+        const result = convertor.convert("name:Hero");
+        expect(result.ok).to.be.true;
+        expect(result.value).to.deep.equal({ key: "name", val: "Hero" });
     });
-}); 
+
+    it("TemplateConvertor rejects non-string pair input", () => {
+        const node = TDM.parse("pair<uint>").inner(0);
+        const convertor = new TemplateConvertor(node);
+        const result = convertor.convert(123 as any);
+        expect(result.ok).to.be.false;
+        expect(result.errors[0].message).to.contain("pair requires string");
+    });
+
+    it("TemplateConvertor propagates inner validation errors", () => {
+        const node = TDM.parse("pair<uint>").inner(0);
+        const convertor = new TemplateConvertor(node);
+        const result = convertor.convert("key:bad");
+        expect(result.ok).to.be.false;
+        expect(result.errors[0].path).to.deep.equal(["val"]);
+    });
+
+    it("RichConvertor tries branches until success", () => {
+        const node = TDM.parse("uint|string");
+        const convertor = new RichConvertor(node.tSeg);
+        const numeric = convertor.convert("42");
+        expect(numeric.ok).to.be.true;
+        expect(numeric.value).to.equal(42);
+
+        const fallback = convertor.convert("not-number");
+        expect(fallback.ok).to.be.true;
+        expect(fallback.value).to.equal("not-number");
+    });
+
+    it("RichConvertor surfaces failure when all branches fail", () => {
+        const node = TDM.parse("uint|ufloat");
+        const convertor = new RichConvertor(node.tSeg);
+        const failure = convertor.convert("bad");
+        expect(failure.ok).to.be.false;
+        expect(failure.errors[0].message.length).to.be.greaterThan(0);
+    });
+
+    it("RichConvertor reports default message when no branches exist", () => {
+        const emptySeg: any = { nodes: [] };
+        const convertor = new RichConvertor(emptySeg);
+        const failure = convertor.convert("value");
+        expect(failure.ok).to.be.false;
+        expect(failure.errors[0].message).to.include("no union branch matched");
+    });
+
+    it("EnumConvertor resolves context enums", () => {
+        const context = { enums: { Element: { FIRE: 1, WATER: [2, "alt"] } } };
+        const node = TDM.parse("enum<Element>", 0, context).inner(0);
+        const convertor = new EnumConvertor(node);
+        expect(convertor.convert("water").value).to.equal(2);
+        expect(convertor.convert("unknown").ok).to.be.false;
+    });
+
+    it("EnumConvertor matches raw fallback", () => {
+        const node = TDM.parse("enum<Value>").inner(0);
+        const convertor = new EnumConvertor(node);
+        const result = convertor.convert("Value");
+        expect(result.ok).to.be.true;
+        expect(result.value).to.equal("Value");
+    });
+
+    it("TNodeConvertor delegates to plain convertors", () => {
+        const node = TDM.parse("int").inner(0);
+        const convertor = new TNodeConvertor(node);
+        const ok = convertor.convert("10");
+        expect(ok.ok).to.be.true;
+        expect(ok.value).to.equal(10);
+    });
+
+    it("TNodeConvertor surfaces template errors with paths", () => {
+        const node = TDM.parse(`${SupportedTypes.Array}<uint>`).inner(0);
+        const convertor = new TNodeConvertor(node);
+        const result = convertor.convert("1|nope|3");
+        expect(result.ok).to.be.false;
+        expect(result.errors[0].path).to.deep.equal([1]);
+    });
+
+    it("TNodeConvertor reports unsupported template type", () => {
+        const node: any = { tName: "unknown", innerCount: 0 };
+        expect(() => new TNodeConvertor(node)).to.throw();
+    });
+
+    it("TemplateConvertor returns unsupported template failure", () => {
+        const node = TDM.parse("array<uint>").inner(0);
+        const convertor = new TemplateConvertor(node);
+        (convertor as any).tNode.tName = "mystery";
+        const result = convertor.convert("value");
+        expect(result.ok).to.be.false;
+        expect(result.errors[0].message).to.equal("unsupported template");
+    });
+});

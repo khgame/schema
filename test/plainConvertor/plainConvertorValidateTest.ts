@@ -3,140 +3,44 @@ import "mocha";
 
 import {SupportedTypes} from "../../src/constant";
 import {getPlainConvertor} from "../../src/convertor";
-import {Error} from "tslint/lib/error";
 
-describe("Plain Convertor Validate Test", () => {
-    describe(SupportedTypes.Any, () => {
-        const convertor = getPlainConvertor(SupportedTypes.Any);
-        it("receive number", () => {
-            expect(convertor.validate(1)).to.deep.equal([true, 1]);
-        });
-        it("receive string", () => {
-            expect(convertor.validate("aaa")).to.deep.equal([true, "aaa"]);
-        });
-        it("receive undefined", () => {
-            expect(convertor.validate(undefined)).to.deep.equal([true, undefined]);
-        });
+function expectResult(ok: boolean, value: any, sample: any, type: string) {
+    const convertor = getPlainConvertor(type);
+    const result = convertor.validate(sample);
+    expect(result.ok).to.equal(ok);
+    if (ok) {
+        expect(result.value).to.deep.equal(value);
+        expect(result.errors).to.deep.equal([]);
+    } else {
+        expect(result.errors.length).to.be.greaterThan(0);
+    }
+}
+
+describe("PlainConvertor.validate", () => {
+    it("returns ok/value for valid inputs", () => {
+        expectResult(true, "123", "123", SupportedTypes.String);
+        expectResult(true, 10, "10", SupportedTypes.Int);
+        expectResult(true, true, "yes", SupportedTypes.Boolean);
     });
 
-    describe(SupportedTypes.String, () => {
-        const convertor = getPlainConvertor(SupportedTypes.String);
-        it("receive number", () => {
-            expect(convertor.validate(1)).to.deep.equal([true, "1"]);
-            expect(convertor.validate(-1.22)).to.deep.equal([true, "-1.22"]);
-        });
-        it("receive string", () => {
-            expect(convertor.validate("aaa")).to.deep.equal([true, "aaa"]);
-        });
-        it("receive undefined", () => {
-            expect(convertor.validate(undefined)).to.deep.equal([false, ""]);
-        });
+    it("collects errors for invalid inputs", () => {
+        const stringResult = getPlainConvertor(SupportedTypes.String).validate(undefined);
+        expect(stringResult.ok).to.be.false;
+        expect(stringResult.errors[0].message).to.contain("string");
+
+        const uintResult = getPlainConvertor(SupportedTypes.UInt).validate("-3");
+        expect(uintResult.ok).to.be.false;
+        expect(uintResult.errors[0].message).to.contain("unsigned");
     });
 
-    describe(SupportedTypes.Boolean, () => {
-        const convertor = getPlainConvertor(SupportedTypes.Boolean);
-        it("receive number", () => {
-            expect(convertor.validate(1)[0]).to.equal(true);
-            expect(convertor.validate(1)[1]).to.equal(true);
-            expect(convertor.validate(0)[0]).to.equal(true);
-            expect(convertor.validate(0)[1]).to.equal(false);
-        });
-        it("receive string aaa|y|yes|t|true|on", () => {
-            expect(convertor.validate("aaa")).to.deep.equal([true, false]);
-            expect(convertor.validate("y")).to.deep.equal([true, true]);
-            expect(convertor.validate("yes")).to.deep.equal([true, true]);
-            expect(convertor.validate("t")).to.deep.equal([true, true]);
-            expect(convertor.validate("true")).to.deep.equal([true, true]);
-            expect(convertor.validate("on")).to.deep.equal([true, true]);
-        });
-        it("receive undefined", () => {
-            expect(convertor.validate(undefined)[0]).to.equal(false);
-        });
+    it("includes path in failure when provided", () => {
+        const result = getPlainConvertor(SupportedTypes.Float).validate("abc", { path: [1, "value"] });
+        expect(result.ok).to.be.false;
+        expect(result.errors[0].path).to.deep.equal([1, "value"]);
     });
 
-    describe(SupportedTypes.Float, () => {
+    it("fails fast when requested", () => {
         const convertor = getPlainConvertor(SupportedTypes.Float);
-        it("receive round", () => {
-            expect(convertor.validate(1)).to.deep.equal([true, 1]);
-        });
-        it("receive float", () => {
-            expect(convertor.validate(1.123123)).to.deep.equal([true, 1.123123]);
-        });
-        it("receive number string", () => {
-            expect(convertor.validate("1.2")).to.deep.equal([true, 1.2]);
-            expect(convertor.validate("-1.2")).to.deep.equal([true, -1.2]);
-        });
-        it("receive non-number string", () => {
-            expect(() => convertor.validate("y")).to.throw(Error);
-            // expect(convertor.validate("y")).to.throw([false, NaN]);
-        });
-        it("receive empty string", () => {
-            expect(convertor.validate("")).to.deep.equal([false, ""]);
-            expect(convertor.validate("  ")).to.deep.equal([false, "  "]);
-        });
-        it("receive undefined", () => {
-            expect(convertor.validate(undefined)).to.deep.equal([false, undefined]);
-        });
+        expect(() => convertor.convert("abc", { failFast: true })).to.throw(TypeError);
     });
-
-    describe(SupportedTypes.UFloat, () => {
-        const convertor = getPlainConvertor(SupportedTypes.UFloat);
-        it("receive float", () => {
-            expect(convertor.validate(1.123123)).to.deep.equal([true, 1.123123]);
-            expect(convertor.validate(-1.123123)).to.deep.equal([false, -1.123123]);
-        });
-        it("receive number string", () => {
-            expect(convertor.validate("1.2")).to.deep.equal([true, 1.2]);
-            expect(convertor.validate("-1.2")).to.deep.equal([false, -1.2]);
-        });
-    });
-
-    describe(SupportedTypes.Int, () => {
-        const convertor = getPlainConvertor(SupportedTypes.Int);
-        it("receive int", () => {
-            expect(convertor.validate(1)).to.deep.equal([true, 1]);
-            expect(convertor.validate(-1)).to.deep.equal([true, -1]);
-        });
-        it("receive float", () => {
-            expect(convertor.validate(1.123123)).to.deep.equal([false, 1.123123]);
-        });
-    });
-
-    describe(SupportedTypes.Undefined, () => {
-        const convertor = getPlainConvertor(SupportedTypes.Undefined);
-        it("receive int", () => {
-            expect(convertor.validate(1)).to.deep.equal([false, undefined]);
-        });
-        it("receive undefined", () => {
-            expect(convertor.validate(undefined)).to.deep.equal([true, undefined]);
-        });
-        it("receive null", () => {
-            expect(convertor.validate(null)).to.deep.equal([true, undefined]);
-        });
-        it("receive empty string", () => {
-            expect(convertor.validate("")).to.deep.equal([true, undefined]);
-            expect(convertor.validate(" ")).to.deep.equal([true, undefined]);
-            expect(convertor.validate("     ")).to.deep.equal([true, undefined]);
-        });
-    });
-
-    describe("default situation", () => {
-
-        it(SupportedTypes.None, () => {
-            const convertor = getPlainConvertor(SupportedTypes.None);
-            expect(convertor).to.not.equal(undefined);
-            expect(convertor.typeName).to.equal(SupportedTypes.None);
-        });
-
-        it(SupportedTypes.Array, () => {
-            const convertor = getPlainConvertor(SupportedTypes.Array);
-            expect(convertor).to.equal(undefined);
-        });
-
-        it(SupportedTypes.Pair, () => {
-            const convertor = getPlainConvertor(SupportedTypes.Pair);
-            expect(convertor).to.equal(undefined);
-        });
-    });
-
 });

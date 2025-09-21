@@ -69,3 +69,6 @@ typings/
 
 # next.js build output
 .next
+
+# Serena workspace artifacts
+.serena/

@@ -1,21 +1,44 @@
-# 🎮 Schema Framework
+# Schema Framework
 
-一个专为游戏开发设计的类型安全数值配置解决方案。
+类型安全的游戏数值配置解析与转换工具集。
 
 [![npm version](https://badge.fury.io/js/%40khgame%2Fschema.svg)](https://badge.fury.io/js/%40khgame%2Fschema)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
 
-## ✨ 特性
+## 核心能力
 
-- 🛡️ **类型安全**: 编译时类型检查，减少运行时错误
-- 🎮 **游戏专用**: 专为游戏数值配置优化的API设计
-- ⚡ **高性能**: 零运行时开销，高效的批量处理
-- 🔄 **格式转换**: 支持 CSV、Excel、JSON 等多种格式互转
-- 🔧 **开发友好**: 直观的API，完善的错误提示
-- 📊 **数据洞察**: 内置数据平衡性分析工具
+- **类型校验**：支持泛型、联合、可选、装饰器（`$ghost`、`$strict`）等标记，构建严谨的配置描述。
+- **软失败转换**：所有 `convert/validate` 返回 `ConvertResult { ok, value, errors }`；默认累计错误，`{ failFast: true }` 时即时抛出。
+- **路径追踪**：错误项包含 `path`、`raw`、`cause` 等字段，可直接用于收敛配置问题。
+- **数据导出**：`exportJson` 按列描述重建嵌套对象/数组结构，并提供原地错误日志。
+- **覆盖完善**：项目内置完整单测（`npm test`），当前语句和函数覆盖率接近 100%。
 
-## 🚀 快速开始
+## 返回结果模型
+
+基础、模板、结构级转换器均实现统一的 `ConvertResult<T>`：
+
+```ts
+interface ConvertResult<T = unknown> {
+  ok: boolean;
+  value?: T;
+  errors: Array<{
+    message: string;
+    path?: Array<string | number>;
+    raw?: unknown;
+    cause?: unknown;
+  }>;
+}
+
+const result = convertor.convert(value, { failFast: false });
+if (!result.ok) {
+  result.errors.forEach(err => report(err.path, err.message));
+}
+```
+
+当需要快速定位首个失败时，传入 `{ failFast: true }` 即可抛出 `TypeError`，同时在异常对象上读取 `convertErrors` 获取具体列表。
+
+## 快速开始
 
 ### 安装
 
@@ -82,9 +105,9 @@ await excelConverter.toFile(heroes, './heroes.xlsx', {
 });
 ```
 
-## 📚 文档
+## 文档
 
-访问我们的完整文档：**[https://khgame.github.io/schema](https://khgame.github.io/schema)**
+详细说明见 [https://khgame.github.io/schema](https://khgame.github.io/schema)。
 
 - [快速开始](https://khgame.github.io/schema/quick-start) - 5分钟上手指南
 - [核心概念](https://khgame.github.io/schema/concepts) - 深入理解框架设计
@@ -92,7 +115,7 @@ await excelConverter.toFile(heroes, './heroes.xlsx', {
 - [游戏示例](https://khgame.github.io/schema/examples) - 实际游戏项目案例
 - [常见问题](https://khgame.github.io/schema/faq) - 问题解答
 
-## 🎮 游戏场景示例
+## 游戏场景示例
 
 ### 卡牌游戏
 
@@ -150,7 +173,7 @@ const BuildingSchema = Schema.define({
 });
 ```
 
-## 🛠️ 开发
+## 开发
 
 ### 本地开发
 
@@ -172,6 +195,9 @@ npm run build
 cd docs
 bundle install
 bundle exec jekyll serve
+
+# 覆盖率报告
+npx nyc report --reporter=text-summary
 ```
 
 ### 项目结构
@@ -216,4 +242,3 @@ schema/
 <div align="center">
   <sub>Built with ❤️ by the KHGame team</sub>
 </div>
-
